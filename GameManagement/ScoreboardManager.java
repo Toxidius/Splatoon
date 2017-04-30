@@ -102,17 +102,18 @@ public class ScoreboardManager implements Runnable{
 		sidebarObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		sidebarObjective.setDisplayName(title); // ChatColor.GOLD + "Paint Percent";
 		
-		this.line1 = sidebarObjective.getScore(line1); // ChatColor.DARK_PURPLE + "Purple: ";
+		this.line1 = sidebarObjective.getScore(line1); // time remaining
 		this.line1.setScore(4);
-		this.line2 = sidebarObjective.getScore(line2); // ChatColor.GREEN + "Green: ";
+		this.line2 = sidebarObjective.getScore(line2); // purple score
 		this.line2.setScore(3);
-		if (line3.equals("") == false){
-			this.line3 = sidebarObjective.getScore(line3);
+		if (line3.length() > 1){
+			this.line3 = sidebarObjective.getScore(line3); // green score
 			this.line3.setScore(2);
 		}
-		if (line3.equals("") == false){
+		if (line4.length() > 1){
 			this.line4 = sidebarObjective.getScore(line4);
 			this.line4.setScore(1);
+			Bukkit.getServer().broadcastMessage("not empty line 4 ");
 		}
 	}
 	
@@ -120,9 +121,10 @@ public class ScoreboardManager implements Runnable{
 		updateScoreboard(); // refreshes the scoreboard
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
-		// this runnable is called every second and is in charge of updating the scoreboard
+		// this runnable is called every second and is in charge of updating the scoreboard and controling the flow of the game
 		
 		if (Core.gameState == GameState.Ending){
 			return; // do nothing here the game is already ending
@@ -130,14 +132,59 @@ public class ScoreboardManager implements Runnable{
 		
 		updateScoreboard();
 		
+		if (Core.gameManager.warmupTimeRemaining != -1){
+			// currently in warmup period
+			for (Player player : Bukkit.getOnlinePlayers()){
+				if (Core.gameManager.warmupTimeRemaining == 0){
+					player.sendTitle(ChatColor.BOLD + "" + ChatColor.GREEN + "Go!", "");
+				}
+				else{
+					player.sendTitle(ChatColor.GOLD + "" + Core.gameManager.warmupTimeRemaining, "");
+				}
+			}
+			
+			if (Core.gameManager.warmupTimeRemaining == 5){
+				// setup glass boxes
+				Core.gameManager.createGlassBoxes();
+			}
+			else if (Core.gameManager.warmupTimeRemaining == 0){
+				// remove glass boxes
+				Core.gameManager.removeGlassBoxes();
+			}
+			
+			// decrement the warmup time
+			Core.gameManager.warmupTimeRemaining--;
+		}
+		else if (Core.gameManager.timeRemaining != 0){
+			// currently in game play period
+			Core.gameManager.timeRemaining--;
+		}
+		else{
+			// round is currently over
+			
+			// check who won here
+			int winningTeam = -1;
+			if (Core.gameManager.team1Blocks > Core.gameManager.team2Blocks){
+				winningTeam = 1;
+			}
+			else if (Core.gameManager.team2Blocks > Core.gameManager.team1Blocks){
+				winningTeam = 2;
+			}
+			else{
+				winningTeam = 0; // tie
+			}
+			
+			// start game end sequence
+			Core.gameManager.endGameInitiate(winningTeam);
+		}
 	}
 	
 	public void updateScoreboard(){
 		String title, line1, line2, line3, line4;
 		title = ChatColor.GOLD + "Paint Percent";
 		line1 = ChatColor.WHITE + "Time Remaining: " + Core.gameManager.timeRemaining;
-		line2 = ChatColor.DARK_PURPLE + "Purple: ";
-		line3 = ChatColor.GREEN + "Green: ";
+		line2 = Core.team1Color + "Purple: " + Core.gameManager.team1Blocks;
+		line3 = Core.team2Color + "Green: " + Core.gameManager.team2Blocks;
 		line4 = "";
 		
 		updateSidebar(title, line1, line2, line3, line4);

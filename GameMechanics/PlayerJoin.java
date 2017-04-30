@@ -13,6 +13,8 @@ public class PlayerJoin implements Listener{
 	public void onPlayerJoin(PlayerJoinEvent e){
 		if (Core.gameStarted == false){
 			e.getPlayer().teleport(Core.lobbySpawn);
+			e.getPlayer().setGameMode(GameMode.SURVIVAL);
+			Core.gameManager.clearInventory(e.getPlayer());
 		}
 		else{
 			// game in progress

@@ -10,10 +10,6 @@ import Splatoon.Main.Core;
 
 public class PlayerChat implements Listener{
 	
-	public PlayerChat() {
-		
-	}
-	
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent e){
 		e.setCancelled(true); // complete overriding of message behavior
@@ -22,7 +18,17 @@ public class PlayerChat implements Listener{
 			Bukkit.getServer().broadcastMessage(ChatColor.GOLD + e.getPlayer().getName() + ChatColor.WHITE + " " + e.getMessage());
 		}
 		else{
-			// TODO colored name messages
+			int playerTeam = Core.gameManager.getPlayerTeam(e.getPlayer().getName());
+			if (playerTeam == -1){
+				// spectator
+				Bukkit.getServer().broadcastMessage(ChatColor.GRAY + e.getPlayer().getName() + ChatColor.WHITE + " " + e.getMessage());
+			}
+			else if (playerTeam == 1){
+				Bukkit.getServer().broadcastMessage(Core.team1Color + e.getPlayer().getName() + ChatColor.WHITE + " " + e.getMessage());
+			}
+			else if (playerTeam == 2){
+				Bukkit.getServer().broadcastMessage(Core.team2Color + e.getPlayer().getName() + ChatColor.WHITE + " " + e.getMessage());
+			}
 		}
 	}
 }
