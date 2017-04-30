@@ -15,6 +15,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 
 import Splatoon.GameMechanics.RespawnTimerRunnable;
+import Splatoon.GameMechanics.SplatRollerRunnable;
+import Splatoon.GameMechanics.WoolCountUpdater;
 import Splatoon.Main.Core;
 import Splatoon.Main.GameStates.GameState;
 
@@ -23,10 +25,13 @@ public class GameManager {
 	private Random r;
 	public WorldManager worldManager;
 	public ScoreboardManager scoreboardManager;
-	public int purpleBlocks;
-	public int greenBlocks;
+	public int team1Blocks;
+	public int team2Blocks;
 	public int warmupTimeRemaining;
 	public int timeRemaining;
+	
+	public WoolCountUpdater woolCountUpdater;
+	public SplatRollerRunnable splatRollerRunnable;
 	
 	public GameManager(){
 		r = new Random();
@@ -48,8 +53,8 @@ public class GameManager {
 		scoreboardManager = new ScoreboardManager();
 		warmupTimeRemaining = 5;
 		timeRemaining = 120;
-		purpleBlocks = 0;
-		greenBlocks = 0;
+		team1Blocks = 0;
+		team2Blocks = 0;
 		
 		// create the game world
 		Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Loading game world...");
@@ -76,9 +81,10 @@ public class GameManager {
 		
 		// finish up the player and teleport into game
 		int team;
+		int kit;
 		for (Player player : Bukkit.getOnlinePlayers()){
 			if (player.isOnline()){
-				team = player.getMetadata("game" + Core.gameID + "team").get(0).asInt();
+				team = player.getMetadata("game" + Core.gameID + "team").get(0).asInt(); // team
 				player.setScoreboard(scoreboardManager.scoreboard);
 				player.setGameMode(GameMode.SURVIVAL);
 				player.setFallDistance(0); // so they don't die if falling
@@ -92,6 +98,19 @@ public class GameManager {
 				else if (team == 2){
 					player.teleport(Core.team2Spawn);
 				}
+				kit = player.getMetadata("game" + Core.gameID + "kit").get(0).asInt(); // kit
+				if (kit == 1){
+					// splat roller
+					player.getInventory().addItem(new ItemStack(Material.STICK, 1));
+				}
+				else if (kit == 2){
+					// splat charger
+					player.getInventory().addItem(new ItemStack(Material.BOW, 1));
+				}
+				else if (kit == 3){
+					// splatter shot
+					player.getInventory().addItem(new ItemStack(Material.SNOW_BALL, 16));
+				}
 			}
 		}
 		
@@ -101,6 +120,9 @@ public class GameManager {
 		// start scheduled events
 		// scoreboard updater
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.thisPlugin, scoreboardManager, 20L, 20L);
+		// wool count updater
+		woolCountUpdater = new WoolCountUpdater();
+		splatRollerRunnable = new SplatRollerRunnable();
 		// set some final values
 		Core.gameStarted = true;
 		Core.gameState = GameState.Running;
@@ -108,14 +130,51 @@ public class GameManager {
 		return true;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void endGameInitiate(int winningTeam){
 		// initiates the game end sequence
-		Core.gameState = GameState.Ending;
 		int seconds = 10;
+		if (winningTeam == -1){
+			seconds = 5;
+		}
+		
+		// end all scheduled events
+		Bukkit.getScheduler().cancelAllTasks();
+		
+		Core.gameState = GameState.Ending;
+		
+		// set all players in spectate mode
+		for (Player player : Bukkit.getOnlinePlayers()){
+			if (player.isOnline()
+					&& player.getGameMode() == GameMode.SURVIVAL){
+				player.setGameMode(GameMode.SPECTATOR);
+				Location newLocation = player.getLocation().add(0.0, 10.0, 0.0);
+				player.teleport(newLocation);
+			}
+		}
+		
+		String winningMessage = "";
+		
+		if (winningTeam == 1){
+			winningMessage = ChatColor.BOLD + "" + Core.team1Color + "Purple Team won the game!";
+		}
+		else if (winningTeam == 2){
+			winningMessage = ChatColor.BOLD + "" + Core.team2Color + "Green Team won the game!";
+		}
+		else if (winningTeam == 0){
+			winningMessage = ChatColor.BOLD + "" + ChatColor.WHITE + "It's a tie! :O";
+		}
+		else{
+			winningMessage = ChatColor.DARK_RED + "" + ChatColor.BOLD + "The game has been terminated!";
+		}
 		
 		Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "-----------------------------------");
-		Bukkit.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "The game is over!");
+		Bukkit.getServer().broadcastMessage(winningMessage);
 		Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "-----------------------------------");
+		
+		for (Player player : Bukkit.getOnlinePlayers()){
+			player.sendTitle(winningMessage, "");
+		}
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Core.thisPlugin, new Runnable(){
 			@Override
@@ -220,6 +279,32 @@ public class GameManager {
 		}
 	}
 	
+	public void setupKits(){
+		ItemStack stack;
+		for (Player player : Bukkit.getOnlinePlayers()){
+			stack = player.getInventory().getHelmet();
+			if (stack == null
+					|| stack.getType() == Material.AIR){
+				// air -- no kit selected, choose a random one for them
+				int randomKit = Core.r.nextInt(3)+1; // 1 to 3
+				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
+				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(randomKit)));
+			}
+			else if (stack.getType() == Material.STICK){
+				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
+				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(1)));
+			}
+			else if (stack.getType() == Material.BOW){
+				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
+				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(2)));
+			}
+			else if (stack.getType() == Material.SNOW_BALL){
+				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
+				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(3)));
+			}
+		}
+	}
+	
 	public void setPlayerTeam(Player player, int team, boolean teleport){
 		// set meta
 		player.removeMetadata("game" + Core.gameID + "team", Core.thisPlugin);
@@ -267,8 +352,7 @@ public class GameManager {
 			player.removePotionEffect(effect.getType());
 		}
 		player.setGameMode(GameMode.SPECTATOR);
-		Location newLocation = player.getLocation();
-		newLocation.setY(newLocation.getY() + 10);
+		Location newLocation = player.getLocation().add(0.0, 10.0, 0.0);
 		player.teleport(newLocation);
 		
 		// set the equipment the player will respawn with here
@@ -281,6 +365,69 @@ public class GameManager {
 		
 		// send title "Respawning..."
 		player.sendTitle(ChatColor.GOLD + "Respawning...", "");
+	}
+	
+	public void createGlassBoxes(){
+		createBox(Core.team1Spawn);
+		createBox(Core.team2Spawn);
+	}
+	
+	public void createBox(Location center){
+		Location temp;
+		
+		int startX = center.getBlockX()-3;
+		int startY = center.getBlockY();
+		int startZ = center.getBlockZ()-3;
+		int x, y, z;
+		int endX = center.getBlockX()+3;
+		int endY = center.getBlockY()+3;
+		int endZ = center.getBlockZ()+3;
+		
+		for(y = startY; y <= endY; y++){
+			for (x = startX; x <= endX; x++){
+				for (z = startZ; z <= endZ; z++){
+					if (y == endY){
+						temp = new Location(center.getWorld(), x, y, z);
+						temp.getBlock().setType(Material.GLASS);
+					}
+					else if (x == startX
+							|| x == endX
+							|| z == startZ
+							|| z == endZ){
+						temp = new Location(center.getWorld(), x, y, z);
+						temp.getBlock().setType(Material.GLASS);
+					}
+				}
+			}
+		}
+	}
+	
+	public void removeGlassBoxes(){
+		removeBox(Core.team1Spawn);
+		removeBox(Core.team2Spawn);
+	}
+	
+	public void removeBox(Location center){
+		Location temp;
+		
+		int startX = center.getBlockX()-3;
+		int startY = center.getBlockY();
+		int startZ = center.getBlockZ()-3;
+		int x, y, z;
+		int endX = center.getBlockX()+3;
+		int endY = center.getBlockY()+3;
+		int endZ = center.getBlockZ()+3;
+		
+		for(y = startY; y <= endY; y++){
+			for (x = startX; x <= endX; x++){
+				for (z = startZ; z <= endZ; z++){
+					temp = new Location(center.getWorld(), x, y, z);
+					if (temp.getBlock().getType() == Material.GLASS){
+						temp.getBlock().setType(Material.AIR);
+					}
+				}
+			}
+		}
 	}
 	
 	public void removeItemWithName(Player player, String itemName){

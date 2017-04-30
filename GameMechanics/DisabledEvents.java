@@ -5,9 +5,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerAchievementAwardedEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
@@ -31,9 +35,38 @@ public class DisabledEvents implements Listener{
 	}
 	
 	@EventHandler
+	public void onPlayerFallDamage(EntityDamageEvent e){
+		if (e.getEntity() instanceof Player
+				&& (e.getCause() == DamageCause.FALL || e.getCause() == DamageCause.ENTITY_ATTACK)){
+			e.setCancelled(true); // no fall damage
+		}
+	}
+	
+	@EventHandler
 	public void onBlockBreak(BlockBreakEvent e){
 		if (e.getPlayer().getGameMode() != GameMode.CREATIVE){
 			e.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent e){
+		if (e.getPlayer().getGameMode() != GameMode.CREATIVE){
+			e.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerDropItem(PlayerDropItemEvent e){
+		if (e.getPlayer().getGameMode() != GameMode.CREATIVE){
+			e.setCancelled(true); // prevent dropping items
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerPickupItem(PlayerPickupItemEvent e){
+		if (e.getPlayer().getGameMode() != GameMode.CREATIVE){
+			e.setCancelled(true); // prevent dropping items
 		}
 	}
 	
@@ -44,6 +77,11 @@ public class DisabledEvents implements Listener{
 	
 	@EventHandler
 	public void onWeatherChange(WeatherChangeEvent e){
+		e.setCancelled(true);
+	}
+	
+	@EventHandler
+	public void onPlayerAchievement(PlayerAchievementAwardedEvent e){
 		e.setCancelled(true);
 	}
 	
