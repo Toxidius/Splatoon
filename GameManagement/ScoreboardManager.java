@@ -113,7 +113,6 @@ public class ScoreboardManager implements Runnable{
 		if (line4.length() > 1){
 			this.line4 = sidebarObjective.getScore(line4);
 			this.line4.setScore(1);
-			Bukkit.getServer().broadcastMessage("not empty line 4 ");
 		}
 	}
 	
@@ -183,8 +182,8 @@ public class ScoreboardManager implements Runnable{
 		String title, line1, line2, line3, line4;
 		title = ChatColor.GOLD + "Paint Percent";
 		line1 = ChatColor.WHITE + "Time Remaining: " + Core.gameManager.timeRemaining;
-		line2 = Core.team1Color + "Purple: " + Core.gameManager.team1Blocks;
-		line3 = Core.team2Color + "Green: " + Core.gameManager.team2Blocks;
+		line2 = Core.team1Color + "Purple: " + ChatColor.WHITE + Core.gameManager.team1Blocks;
+		line3 = Core.team2Color + "Green: " + ChatColor.WHITE + Core.gameManager.team2Blocks;
 		line4 = "";
 		
 		updateSidebar(title, line1, line2, line3, line4);

@@ -15,6 +15,7 @@ public class RespawnTimerRunnable implements Runnable{
 	private String playerName;
 	private int calls;
 	private int id;
+	private int respawnTime;
 	private ItemStack[] keepArmor;
 	private ItemStack[] keepInventory;
 	private boolean playerLoggedOut;
@@ -22,12 +23,13 @@ public class RespawnTimerRunnable implements Runnable{
 	
 	public RespawnTimerRunnable(Player player, ItemStack[] keepArmor, ItemStack[] keepInventory) {
 		this.player = player;
-		this.playerName = player.getName();
-		this.calls = 0;
 		this.keepArmor = keepArmor;
 		this.keepInventory = keepInventory;
-		this.playerLoggedOut = false;
-		this.teleportSuccess = false;
+		playerName = player.getName();
+		calls = 0;
+		respawnTime = 5;
+		playerLoggedOut = false;
+		teleportSuccess = false;
 		
 		id = Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.thisPlugin, this, 20L, 20L); // run every second
 	}
@@ -35,7 +37,7 @@ public class RespawnTimerRunnable implements Runnable{
 	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
-		if (calls >= 5){
+		if (calls >= respawnTime){
 			// end runnable and respawn the player if they're still logged in -- otherwise keep the runnable going until they log back in
 			if (player.isOnline() && playerLoggedOut && !teleportSuccess){
 				// player logged out mid respawn
@@ -61,7 +63,7 @@ public class RespawnTimerRunnable implements Runnable{
 		
 		calls++;
 		if (player.isOnline() && playerLoggedOut == false){
-			player.sendTitle("", ChatColor.GOLD + "" + (15-calls) + "...");
+			player.sendTitle("", ChatColor.GOLD + "" + (respawnTime-calls) + "...");
 		}
 		
 	}
@@ -69,7 +71,7 @@ public class RespawnTimerRunnable implements Runnable{
 	@SuppressWarnings("deprecation")
 	public void playerRespawn(){
 		player = Bukkit.getPlayer(playerName);
-		int team = player.getMetadata("game" + Core.gameID + "team").get(0).asInt();
+		int team = Core.gameManager.getPlayerTeam(player);
 		player.setGameMode(GameMode.SURVIVAL);
 		player.setHealth(20.0);
 		player.setFoodLevel(20);

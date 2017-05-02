@@ -18,7 +18,7 @@ public class PlayerJoin implements Listener{
 		}
 		else{
 			// game in progress
-			int playerTeam = Core.gameManager.getPlayerTeam(e.getPlayer().getName());
+			int playerTeam = Core.gameManager.getPlayerTeam(e.getPlayer());
 			if (playerTeam == -1){
 				// has no team, set them in spectator mode
 				e.getPlayer().setGameMode(GameMode.SPECTATOR);

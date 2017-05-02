@@ -24,7 +24,7 @@ public class SplatRollerRunnable implements Runnable{
 					&& player.getItemInHand().getType() == Material.STICK){
 				// this player is a splat roller
 				byte woolColor = 0;
-				int team = player.getMetadata("game" + Core.gameID + "team").get(0).asInt();
+				int team = Core.gameManager.getPlayerTeam(player);
 				if (team == 1){
 					woolColor = Core.team1WoolColor;
 				}
