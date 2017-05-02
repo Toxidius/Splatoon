@@ -1,5 +1,7 @@
 package Splatoon.GameMechanics;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +15,7 @@ import org.bukkit.event.player.PlayerAchievementAwardedEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
 import Splatoon.Main.Core;
@@ -32,6 +35,30 @@ public class DisabledEvents implements Listener{
 				e.getEntity().teleport(Core.lobbySpawn);
 			}
 		}
+	}
+	
+	@EventHandler
+	public void onServerPing(ServerListPingEvent e){
+		int numOnline = Bukkit.getOnlinePlayers().size();
+		String serverName = ChatColor.GREEN + "Splatoon!";
+		String MOTD = Core.MOTD;
+		
+		if (numOnline <= 0){
+			e.setMotd(serverName + ChatColor.WHITE + " - " + ChatColor.WHITE + MOTD);
+			//e.setMotd(ChatColor.DARK_PURPLE + "Crack Attack " + ChatColor.LIGHT_PURPLE + "Remake!" + ChatColor.WHITE + " - " + ChatColor.WHITE + CACore.MOTD);
+		}
+		else if (numOnline > 0 && MOTD.length() <= 28){
+			e.setMotd(serverName + ChatColor.WHITE + " - " + ChatColor.WHITE + MOTD
+					+ "\n" + ChatColor.AQUA + ChatColor.UNDERLINE + numOnline + ChatColor.RESET + ChatColor.AQUA + " Currently online!");
+		}
+		else{
+			e.setMotd(serverName + ChatColor.WHITE + " - " + ChatColor.WHITE + MOTD
+					+ "   " + ChatColor.AQUA + ChatColor.UNDERLINE + numOnline + ChatColor.RESET + ChatColor.AQUA + " Currently online!");
+		}
+		
+		String address = e.getAddress().toString();
+		address = address.substring(1, address.length());
+		System.out.println("Ping from " + address);
 	}
 	
 	@EventHandler

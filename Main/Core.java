@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -15,7 +16,10 @@ import Splatoon.GameManagement.GameManager;
 import Splatoon.GameMechanics.DisabledEvents;
 import Splatoon.GameMechanics.KitSelection;
 import Splatoon.GameMechanics.PlayerChat;
+import Splatoon.GameMechanics.PlayerDeath;
 import Splatoon.GameMechanics.PlayerJoin;
+import Splatoon.GameMechanics.SplatCharger;
+import Splatoon.GameMechanics.SplatterShot;
 import Splatoon.Main.GameStates.GameState;
 
 public class Core extends JavaPlugin{
@@ -25,6 +29,7 @@ public class Core extends JavaPlugin{
 	public static boolean gameStarted;
 	public static GameState gameState;
 	public static int gameID;
+	public static String MOTD;
 	
 	public static World lobbyWorld;
 	public static World gameWorld;
@@ -41,6 +46,8 @@ public class Core extends JavaPlugin{
 	
 	public static ChatColor team1Color;
 	public static ChatColor team2Color;
+	public static Color team1LeatherColor;
+	public static Color team2LeatherColor;
 	public static byte team1WoolColor;
 	public static byte team2WoolColor;
 	
@@ -54,6 +61,7 @@ public class Core extends JavaPlugin{
 		gameStarted = false;
 		gameState = GameState.NotStarted;
 		gameID = 1;
+		MOTD = "Woah new game?? :O";
 		
 		lobbyWorld = Bukkit.getWorld("world");
 		gameWorld = null;
@@ -69,14 +77,19 @@ public class Core extends JavaPlugin{
 		
 		team1Color = ChatColor.DARK_PURPLE;
 		team2Color = ChatColor.GREEN;
+		team1LeatherColor = Color.PURPLE;
+		team2LeatherColor = Color.GREEN;
 		team1WoolColor = 10;
 		team2WoolColor = 5;
 		
 		// non-global objects
 		PlayerJoin playerJoin = new PlayerJoin();
 		PlayerChat playerChat = new PlayerChat();
+		PlayerDeath playerDeath = new PlayerDeath();
 		DisabledEvents disabledEvents = new DisabledEvents();
 		KitSelection kitSelection = new KitSelection();
+		SplatCharger splatCharger = new SplatCharger();
+		SplatterShot splatterShot = new SplatterShot();
 		
 		// initialize objects
 		gameManager = new GameManager();
@@ -85,8 +98,11 @@ public class Core extends JavaPlugin{
 		PluginManager pluginMan = Bukkit.getPluginManager();
 		pluginMan.registerEvents(playerJoin, thisPlugin);
 		pluginMan.registerEvents(playerChat, thisPlugin);
+		pluginMan.registerEvents(playerDeath, thisPlugin);
 		pluginMan.registerEvents(disabledEvents, thisPlugin);
 		pluginMan.registerEvents(kitSelection, thisPlugin);
+		pluginMan.registerEvents(splatCharger, thisPlugin);
+		pluginMan.registerEvents(splatterShot, thisPlugin);
 	}
 	
 	@Override

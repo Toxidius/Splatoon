@@ -11,11 +11,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 
 import Splatoon.GameMechanics.RespawnTimerRunnable;
+import Splatoon.GameMechanics.SplatChargerRunnable;
 import Splatoon.GameMechanics.SplatRollerRunnable;
+import Splatoon.GameMechanics.SplatterShotRunnable;
 import Splatoon.GameMechanics.WoolCountUpdater;
 import Splatoon.Main.Core;
 import Splatoon.Main.GameStates.GameState;
@@ -32,6 +35,8 @@ public class GameManager {
 	
 	public WoolCountUpdater woolCountUpdater;
 	public SplatRollerRunnable splatRollerRunnable;
+	public SplatChargerRunnable splatChargerRunnable;
+	public SplatterShotRunnable splatterShotRunnable;
 	
 	public GameManager(){
 		r = new Random();
@@ -52,7 +57,7 @@ public class GameManager {
 		// reset some values
 		scoreboardManager = new ScoreboardManager();
 		warmupTimeRemaining = 5;
-		timeRemaining = 120;
+		timeRemaining = 180;
 		team1Blocks = 0;
 		team2Blocks = 0;
 		
@@ -78,13 +83,14 @@ public class GameManager {
 		
 		// generate the player teams
 		generateTeams();
+		// setup kits based on what the player chose.
+		setupKits();
 		
 		// finish up the player and teleport into game
 		int team;
-		int kit;
 		for (Player player : Bukkit.getOnlinePlayers()){
 			if (player.isOnline()){
-				team = player.getMetadata("game" + Core.gameID + "team").get(0).asInt(); // team
+				team = getPlayerTeam(player); // team
 				player.setScoreboard(scoreboardManager.scoreboard);
 				player.setGameMode(GameMode.SURVIVAL);
 				player.setFallDistance(0); // so they don't die if falling
@@ -92,24 +98,13 @@ public class GameManager {
 				player.setFoodLevel(20); // set food level to full
 				player.setSaturation(40); // set saturation to 40
 				clearInventory(player);
+				givePlayerKit(player);
+				givePlayerTeamArmor(player);
 				if (team == 1){
 					player.teleport(Core.team1Spawn);
 				}
 				else if (team == 2){
 					player.teleport(Core.team2Spawn);
-				}
-				kit = player.getMetadata("game" + Core.gameID + "kit").get(0).asInt(); // kit
-				if (kit == 1){
-					// splat roller
-					player.getInventory().addItem(new ItemStack(Material.STICK, 1));
-				}
-				else if (kit == 2){
-					// splat charger
-					player.getInventory().addItem(new ItemStack(Material.BOW, 1));
-				}
-				else if (kit == 3){
-					// splatter shot
-					player.getInventory().addItem(new ItemStack(Material.SNOW_BALL, 16));
 				}
 			}
 		}
@@ -123,6 +118,8 @@ public class GameManager {
 		// wool count updater
 		woolCountUpdater = new WoolCountUpdater();
 		splatRollerRunnable = new SplatRollerRunnable();
+		splatChargerRunnable = new SplatChargerRunnable();
+		splatterShotRunnable = new SplatterShotRunnable();
 		// set some final values
 		Core.gameStarted = true;
 		Core.gameState = GameState.Running;
@@ -195,6 +192,9 @@ public class GameManager {
 			if (player.isOnline()){
 				if (player.hasMetadata("game" + Core.gameID + "team")){
 					player.removeMetadata("game" + Core.gameID + "team", Core.thisPlugin);
+				}
+				if (player.hasMetadata("game" + Core.gameID + "kit")){
+					player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
 				}
 				player.setScoreboard(scoreboardManager.emptyScoreboard);
 				player.setGameMode(GameMode.SURVIVAL);
@@ -305,6 +305,42 @@ public class GameManager {
 		}
 	}
 	
+	public void givePlayerKit(Player player){
+		int kit = getPlayerKit(player.getName());
+		if (kit == 1){
+			// splat roller
+			player.getInventory().addItem(new ItemStack(Material.STICK, 1));
+		}
+		else if (kit == 2){
+			// splat charger
+			player.getInventory().addItem(new ItemStack(Material.BOW, 1));
+			player.getInventory().addItem(new ItemStack(Material.ARROW, 3));
+		}
+		else if (kit == 3){
+			// splatter shot
+			player.getInventory().addItem(new ItemStack(Material.SNOW_BALL, 16));
+		}
+	}
+	
+	public void givePlayerTeamArmor(Player player){
+		ItemStack team1Chestplate = new ItemStack(Material.LEATHER_CHESTPLATE, 1);
+		LeatherArmorMeta meta1 = (LeatherArmorMeta) team1Chestplate.getItemMeta();
+		meta1.setColor(Core.team1LeatherColor);
+		team1Chestplate.setItemMeta(meta1);
+		ItemStack team2Chestplate = new ItemStack(Material.LEATHER_CHESTPLATE, 1);
+		LeatherArmorMeta meta2 = (LeatherArmorMeta) team2Chestplate.getItemMeta();
+		meta2.setColor(Core.team2LeatherColor);
+		team2Chestplate.setItemMeta(meta2);
+		
+		int team = getPlayerTeam(player);
+		if (team == 1){
+			player.getInventory().setChestplate(team1Chestplate);
+		}
+		else if (team == 2){
+			player.getInventory().setChestplate(team2Chestplate);
+		}
+	}
+	
 	public void setPlayerTeam(Player player, int team, boolean teleport){
 		// set meta
 		player.removeMetadata("game" + Core.gameID + "team", Core.thisPlugin);
@@ -331,13 +367,45 @@ public class GameManager {
 		if (player == null){
 			return -1; // no player with this name online
 		}
+		return getPlayerTeam(player);
+	}
+	
+	public int getPlayerTeam(Player player){
+		if (player.hasMetadata("game" + Core.gameID + "team") == true){
+			return player.getMetadata("game" + Core.gameID + "team").get(0).asInt();
+		}
 		else{
-			if (player.hasMetadata("game" + Core.gameID + "team") == true){
-				return player.getMetadata("game" + Core.gameID + "team").get(0).asInt();
-			}
-			else{
-				return -1; // no team
-			}
+			return -1; // no team
+		}
+	}
+	
+	public int getPlayerKit(String playerName){
+		Player player = Bukkit.getPlayer(playerName);
+		if (player == null){
+			return -1; // no player with this name online
+		}
+		return getPlayerKit(player);
+	}
+	
+	public int getPlayerKit(Player player){
+		if (player.hasMetadata("game" + Core.gameID + "kit") == true){
+			return player.getMetadata("game" + Core.gameID + "kit").get(0).asInt();
+		}
+		else{
+			return -1; // no kit
+		}
+	}
+	
+	public byte getPlayerWoolColor(Player player){
+		int team = getPlayerTeam(player);
+		if (team == 1){
+			return Core.team1WoolColor;
+		}
+		else if (team == 2){
+			return Core.team2WoolColor;
+		}
+		else{
+			return 0;
 		}
 	}
 	
@@ -352,10 +420,12 @@ public class GameManager {
 			player.removePotionEffect(effect.getType());
 		}
 		player.setGameMode(GameMode.SPECTATOR);
-		Location newLocation = player.getLocation().add(0.0, 10.0, 0.0);
+		Location newLocation = player.getLocation().add(0.0, 5.0, 0.0);
 		player.teleport(newLocation);
 		
 		// set the equipment the player will respawn with here
+		givePlayerKit(player);
+		givePlayerTeamArmor(player);
 		
 		// start the countdown timer thingy
 		ItemStack[] keepArmor = player.getEquipment().getArmorContents();
