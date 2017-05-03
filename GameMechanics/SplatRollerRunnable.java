@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import Splatoon.Main.Core;
@@ -31,6 +32,8 @@ public class SplatRollerRunnable implements Runnable{
 				else if (team == 2){
 					woolColor = Core.team2WoolColor;
 				}
+				
+				// wool color change checks
 				Location center = player.getLocation();
 				Location temp;
 				
@@ -51,6 +54,22 @@ public class SplatRollerRunnable implements Runnable{
 								temp.getBlock().setData(woolColor);
 							}
 						}
+					}
+				}
+				
+				// kill nearby opponents
+				int otherPlayerTeam;
+				for (Entity entity : player.getNearbyEntities(2.0, 2.0, 2.0)){
+					if (entity instanceof Player){
+						Player otherPlayer = (Player) entity;
+						if (otherPlayer.getGameMode() == GameMode.SURVIVAL){
+							otherPlayerTeam = Core.gameManager.getPlayerTeam(otherPlayer);
+							//Bukkit.getServer().broadcastMessage(otherPlayer.getName() + " " + otherPlayerTeam + " " + team);
+							if (otherPlayerTeam != team){
+								otherPlayer.damage(30.0, player); // this player isn't on the same team, and within range. they get killed by the splat roller
+							}
+						}
+						
 					}
 				}
 			}

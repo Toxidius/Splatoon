@@ -42,7 +42,7 @@ public class SplatCharger implements Listener{
 					e.setCancelled(true);
 				}
 				else{
-					e.setDamage(e.getDamage()*2.5); // full powered shot should kill a player in 1 hit
+					e.setDamage(e.getDamage()*2.0); // full powered shot should kill a player in 1 hit
 				}
 			}
 		}

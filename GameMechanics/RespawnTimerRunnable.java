@@ -38,22 +38,7 @@ public class RespawnTimerRunnable implements Runnable{
 	@Override
 	public void run() {
 		if (calls >= respawnTime){
-			// end runnable and respawn the player if they're still logged in -- otherwise keep the runnable going until they log back in
-			if (player.isOnline() && playerLoggedOut && !teleportSuccess){
-				// player logged out mid respawn
-				playerRespawn();
-				return;
-			}
-			else if (player.isOnline()){
-				// player never logged out
-				playerRespawn();
-				return;
-			}
-			else{
-				// player just logged out, so remember this so the runnable doesn't end
-				playerLoggedOut = true;
-			}
-			
+			initiateRespawn();
 		}
 		else if (calls == 1){
 			// set the players keep inventory
@@ -65,7 +50,27 @@ public class RespawnTimerRunnable implements Runnable{
 		if (player.isOnline() && playerLoggedOut == false){
 			player.sendTitle("", ChatColor.GOLD + "" + (respawnTime-calls) + "...");
 		}
-		
+		if (calls >= respawnTime){
+			initiateRespawn();
+		}
+	}
+	
+	public void initiateRespawn(){
+		// end runnable and respawn the player if they're still logged in -- otherwise keep the runnable going until they log back in
+		if (player.isOnline() && playerLoggedOut && !teleportSuccess){
+			// player logged out mid respawn
+			playerRespawn();
+			return;
+		}
+		else if (player.isOnline()){
+			// player never logged out
+			playerRespawn();
+			return;
+		}
+		else{
+			// player just logged out, so remember this so the runnable doesn't end
+			playerLoggedOut = true;
+		}
 	}
 	
 	@SuppressWarnings("deprecation")

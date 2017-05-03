@@ -115,10 +115,6 @@ public class ScoreboardManager implements Runnable{
 			this.line4.setScore(1);
 		}
 	}
-	
-	public void refresh(){
-		updateScoreboard(); // refreshes the scoreboard
-	}
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -180,7 +176,7 @@ public class ScoreboardManager implements Runnable{
 	
 	public void updateScoreboard(){
 		String title, line1, line2, line3, line4;
-		title = ChatColor.GOLD + "Paint Percent";
+		title = ChatColor.GOLD + "Paint Count";
 		line1 = ChatColor.WHITE + "Time Remaining: " + Core.gameManager.timeRemaining;
 		line2 = Core.team1Color + "Purple: " + ChatColor.WHITE + Core.gameManager.team1Blocks;
 		line3 = Core.team2Color + "Green: " + ChatColor.WHITE + Core.gameManager.team2Blocks;
