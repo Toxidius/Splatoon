@@ -7,6 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +20,7 @@ import Splatoon.GameMechanics.RespawnTimerRunnable;
 import Splatoon.GameMechanics.SplatChargerRunnable;
 import Splatoon.GameMechanics.SplatRollerRunnable;
 import Splatoon.GameMechanics.SplatterShotRunnable;
+import Splatoon.GameMechanics.WoolClimbing;
 import Splatoon.GameMechanics.WoolCountUpdater;
 import Splatoon.Main.Core;
 import Splatoon.Main.GameStates.GameState;
@@ -34,6 +36,7 @@ public class GameManager {
 	public int timeRemaining;
 	
 	public WoolCountUpdater woolCountUpdater;
+	public WoolClimbing woolClimbing;
 	public SplatRollerRunnable splatRollerRunnable;
 	public SplatChargerRunnable splatChargerRunnable;
 	public SplatterShotRunnable splatterShotRunnable;
@@ -62,9 +65,9 @@ public class GameManager {
 		team2Blocks = 0;
 		
 		// create the game world
-		Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Loading game world...");
+		//Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Loading game world...");
 		createGameWorld();
-		Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Done loading game world.");
+		//Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Done loading game world.");
 		
 		// update world locations
 		Core.team1Spawn.setWorld(Core.gameWorld);
@@ -74,7 +77,7 @@ public class GameManager {
 		// setup scoreboards
 		scoreboardManager.setupScoreboard();
 		String title, line1, line2, line3, line4;
-		title = ChatColor.GOLD + "Paint Percent";
+		title = ChatColor.GOLD + "Paint Count";
 		line1 = ChatColor.WHITE + "Time Remaining: " + timeRemaining;
 		line2 = ChatColor.DARK_PURPLE + "Purple: " + ChatColor.WHITE + "0";
 		line3 = ChatColor.GREEN + "Green: " + ChatColor.WHITE + "0";
@@ -117,6 +120,7 @@ public class GameManager {
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.thisPlugin, scoreboardManager, 20L, 20L);
 		// wool count updater
 		woolCountUpdater = new WoolCountUpdater();
+		woolClimbing = new WoolClimbing();
 		splatRollerRunnable = new SplatRollerRunnable();
 		splatChargerRunnable = new SplatChargerRunnable();
 		splatterShotRunnable = new SplatterShotRunnable();
@@ -132,7 +136,7 @@ public class GameManager {
 		// initiates the game end sequence
 		int seconds = 10;
 		if (winningTeam == -1){
-			seconds = 5;
+			seconds = 2;
 		}
 		
 		// end all scheduled events
@@ -162,7 +166,7 @@ public class GameManager {
 			winningMessage = ChatColor.BOLD + "" + ChatColor.WHITE + "It's a tie! :O";
 		}
 		else{
-			winningMessage = ChatColor.DARK_RED + "" + ChatColor.BOLD + "The game has been terminated!";
+			winningMessage = ChatColor.DARK_RED + "" + ChatColor.BOLD + "The game was terminated!";
 		}
 		
 		Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "-----------------------------------");
@@ -309,11 +313,15 @@ public class GameManager {
 		int kit = getPlayerKit(player.getName());
 		if (kit == 1){
 			// splat roller
-			player.getInventory().addItem(new ItemStack(Material.STICK, 1));
+			ItemStack stick = new ItemStack(Material.STICK, 1);
+			stick.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+			player.getInventory().addItem(stick);
 		}
 		else if (kit == 2){
 			// splat charger
-			player.getInventory().addItem(new ItemStack(Material.BOW, 1));
+			ItemStack bow = new ItemStack(Material.BOW, 1);
+			bow.addEnchantment(Enchantment.ARROW_DAMAGE, 1);
+			player.getInventory().addItem(bow);
 			player.getInventory().addItem(new ItemStack(Material.ARROW, 3));
 		}
 		else if (kit == 3){
@@ -323,21 +331,46 @@ public class GameManager {
 	}
 	
 	public void givePlayerTeamArmor(Player player){
+		LeatherArmorMeta meta1;
+		LeatherArmorMeta meta2;
+		
 		ItemStack team1Chestplate = new ItemStack(Material.LEATHER_CHESTPLATE, 1);
-		LeatherArmorMeta meta1 = (LeatherArmorMeta) team1Chestplate.getItemMeta();
+		meta1 = (LeatherArmorMeta) team1Chestplate.getItemMeta();
 		meta1.setColor(Core.team1LeatherColor);
 		team1Chestplate.setItemMeta(meta1);
 		ItemStack team2Chestplate = new ItemStack(Material.LEATHER_CHESTPLATE, 1);
-		LeatherArmorMeta meta2 = (LeatherArmorMeta) team2Chestplate.getItemMeta();
+		meta2 = (LeatherArmorMeta) team2Chestplate.getItemMeta();
 		meta2.setColor(Core.team2LeatherColor);
 		team2Chestplate.setItemMeta(meta2);
+		
+		ItemStack team1Leggings = new ItemStack(Material.LEATHER_LEGGINGS, 1);
+		meta1 = (LeatherArmorMeta) team1Leggings.getItemMeta();
+		meta1.setColor(Core.team1LeatherColor);
+		team1Leggings.setItemMeta(meta1);
+		ItemStack team2Leggings = new ItemStack(Material.LEATHER_LEGGINGS, 1);
+		meta2 = (LeatherArmorMeta) team2Leggings.getItemMeta();
+		meta2.setColor(Core.team2LeatherColor);
+		team2Leggings.setItemMeta(meta2);
+		
+		ItemStack team1Boots = new ItemStack(Material.LEATHER_BOOTS, 1);
+		meta1 = (LeatherArmorMeta) team1Boots.getItemMeta();
+		meta1.setColor(Core.team1LeatherColor);
+		team1Boots.setItemMeta(meta1);
+		ItemStack team2Boots = new ItemStack(Material.LEATHER_BOOTS, 1);
+		meta2 = (LeatherArmorMeta) team2Boots.getItemMeta();
+		meta2.setColor(Core.team2LeatherColor);
+		team2Boots.setItemMeta(meta2);
 		
 		int team = getPlayerTeam(player);
 		if (team == 1){
 			player.getInventory().setChestplate(team1Chestplate);
+			player.getInventory().setLeggings(team1Leggings);
+			player.getInventory().setBoots(team1Boots);
 		}
 		else if (team == 2){
 			player.getInventory().setChestplate(team2Chestplate);
+			player.getInventory().setLeggings(team2Leggings);
+			player.getInventory().setBoots(team2Boots);
 		}
 	}
 	

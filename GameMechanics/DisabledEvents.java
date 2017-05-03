@@ -64,7 +64,7 @@ public class DisabledEvents implements Listener{
 	@EventHandler
 	public void onPlayerFallDamage(EntityDamageEvent e){
 		if (e.getEntity() instanceof Player
-				&& (e.getCause() == DamageCause.FALL || e.getCause() == DamageCause.ENTITY_ATTACK)){
+				&& e.getCause() == DamageCause.FALL){
 			e.setCancelled(true); // no fall damage
 		}
 	}

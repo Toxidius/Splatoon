@@ -61,7 +61,7 @@ public class SplatterShot implements Listener{
 					e.setCancelled(true);
 				}
 				else{
-					e.setDamage(7.0); // 3 hits will kill a player
+					e.setDamage(10.0); // 3 hits will kill a player
 				}
 			}
 		}
