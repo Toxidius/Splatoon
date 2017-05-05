@@ -59,17 +59,22 @@ public class SplatRollerRunnable implements Runnable{
 				
 				// kill nearby opponents
 				int otherPlayerTeam;
+				int otherPlayerKit;
 				for (Entity entity : player.getNearbyEntities(2.0, 2.0, 2.0)){
 					if (entity instanceof Player){
 						Player otherPlayer = (Player) entity;
 						if (otherPlayer.getGameMode() == GameMode.SURVIVAL){
 							otherPlayerTeam = Core.gameManager.getPlayerTeam(otherPlayer);
+							otherPlayerKit = Core.gameManager.getPlayerKit(otherPlayer);
 							//Bukkit.getServer().broadcastMessage(otherPlayer.getName() + " " + otherPlayerTeam + " " + team);
 							if (otherPlayerTeam != team){
 								otherPlayer.damage(30.0, player); // this player isn't on the same team, and within range. they get killed by the splat roller
 							}
+							if (otherPlayerKit == 1){
+								// the other player is splat roller too, so kill the player aswell
+								player.damage(30.0, otherPlayer);
+							}
 						}
-						
 					}
 				}
 			}

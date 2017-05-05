@@ -55,6 +55,7 @@ public class Core extends JavaPlugin{
 	
 	// global objects
 	public static GameManager gameManager;
+	public static PluginManager pluginMan;
 	
 	@Override
 	public void onEnable(){
@@ -96,10 +97,10 @@ public class Core extends JavaPlugin{
 		SplatterShot splatterShot = new SplatterShot();
 		
 		// initialize objects
+		pluginMan = Bukkit.getPluginManager();
 		gameManager = new GameManager();
 		
 		// register listeners
-		PluginManager pluginMan = Bukkit.getPluginManager();
 		pluginMan.registerEvents(playerJoin, thisPlugin);
 		pluginMan.registerEvents(playerChat, thisPlugin);
 		pluginMan.registerEvents(playerDeath, thisPlugin);

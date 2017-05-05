@@ -30,6 +30,7 @@ public class GameManager {
 	private Random r;
 	public WorldManager worldManager;
 	public ScoreboardManager scoreboardManager;
+	public GameStarter gameStarter;
 	public int team1Blocks;
 	public int team2Blocks;
 	public int warmupTimeRemaining;
@@ -46,7 +47,9 @@ public class GameManager {
 		worldManager = new WorldManager();
 		scoreboardManager = new ScoreboardManager();
 		
-		//PluginManager pluginMan = Bukkit.getPluginManager();
+		gameStarter = new GameStarter();
+		Core.pluginMan.registerEvents(gameStarter, Core.thisPlugin);
+		gameStarter.start();
 	}
 	
 	public boolean startGame(){
@@ -58,6 +61,7 @@ public class GameManager {
 		}
 		
 		// reset some values
+		gameStarter.stop();
 		scoreboardManager = new ScoreboardManager();
 		warmupTimeRemaining = 5;
 		timeRemaining = 180;
@@ -217,6 +221,9 @@ public class GameManager {
 		
 		// reset some values
 		Core.gameState = GameState.NotStarted;
+		
+		// startup game starter
+		gameStarter.start();
 		
 		// delete the game world
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Core.thisPlugin, new Runnable(){
@@ -440,6 +447,21 @@ public class GameManager {
 		else{
 			return 0;
 		}
+	}
+	
+	public int getAmountInPlayerInventory(Player player, Material material){
+		// gets the amount of a specific material in the players inventory
+		int amount = 0;
+		for (ItemStack stack : player.getInventory().getContents()){
+			if (stack == null
+					|| stack.getType() == Material.AIR){
+				continue; // skip
+			}
+			if (stack.getType() == material){
+				amount += stack.getAmount();
+			}
+		}
+		return amount;
 	}
 	
 	@SuppressWarnings("deprecation")
