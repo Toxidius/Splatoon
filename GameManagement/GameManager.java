@@ -144,8 +144,7 @@ public class GameManager {
 		}
 		
 		// end all scheduled events
-		Bukkit.getScheduler().cancelAllTasks();
-		
+		Bukkit.getScheduler().cancelTasks(Core.thisPlugin);
 		Core.gameState = GameState.Ending;
 		
 		// set all players in spectate mode
@@ -178,7 +177,7 @@ public class GameManager {
 		Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "-----------------------------------");
 		
 		for (Player player : Bukkit.getOnlinePlayers()){
-			player.sendTitle(winningMessage, "");
+			player.sendTitle("", winningMessage);
 		}
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Core.thisPlugin, new Runnable(){
@@ -191,9 +190,6 @@ public class GameManager {
 	
 	public boolean endGame(){
 		// return whether or not the game ended successfully
-		
-		// end all scheduled events
-		Bukkit.getScheduler().cancelAllTasks();
 		
 		// teleport all players to lobby and reset their inventory and scoreboard
 		for (Player player : Bukkit.getOnlinePlayers()){

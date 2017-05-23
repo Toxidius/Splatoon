@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,9 +19,10 @@ import Splatoon.Main.Core;
 
 public class LobbyBuilding implements Listener{
 	
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({"deprecation"})
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerChooseBlock(PlayerInteractEvent e){
+		// Bukkit.getServer().broadcastMessage("" + ((Core)Bukkit.getPluginManager().getPlugin("Splatoon")).gameID );
 		if (Core.gameStarted == false
 				&& (e.getAction() == Action.RIGHT_CLICK_BLOCK
 					|| e.getAction() == Action.LEFT_CLICK_BLOCK)){
@@ -39,16 +41,45 @@ public class LobbyBuilding implements Listener{
 		}
 	}
 	
+	@EventHandler(priority = EventPriority.HIGHEST) // gets last say in whether it's canceled or not
+	public void onPlayerBuildInBuildArea(BlockPlaceEvent e){
+		if (Core.gameStarted == false
+				&& e.getPlayer().getItemInHand() != null
+				&& e.getPlayer().getItemInHand().getType() != Material.AIR
+				&& e.getPlayer().getItemInHand().getType() != Material.GLASS
+				&& e.getPlayer().getItemInHand().getType() != Material.OBSIDIAN){
+			Location location = e.getBlock().getLocation();
+			if (isInBuildArea(location) == true){
+				e.setCancelled(false); // allow this block to be placed
+				
+				Player player = e.getPlayer();
+				ItemStack stack = e.getPlayer().getItemInHand().clone();
+				Bukkit.getScheduler().scheduleSyncDelayedTask(Core.thisPlugin, new Runnable(){
+					@Override
+					public void run() {
+						player.setItemInHand(stack); // reset the item in the players hand so that they keep it when placing blocks
+					}
+				}, 1); // 1 tick later
+				
+				//location.getBlock().setType(e.getPlayer().getItemInHand().getType(), false);
+				//location.getBlock().setData((byte)e.getPlayer().getItemInHand().getDurability(), false);
+				//location.getWorld().playEffect(location, Effect.STEP_SOUND, location.getBlock().getTypeId(), 10); // block break effect
+			}
+		}
+	}
+	
 	@SuppressWarnings("deprecation")
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerBuildInBuildArea(PlayerInteractEvent e){
+	@EventHandler
+	public void onPlayerBuildInClassicBuildArea(PlayerInteractEvent e){
 		if (Core.gameStarted == false
 				&& e.getAction() == Action.RIGHT_CLICK_BLOCK
 				&& e.getPlayer().getItemInHand() != null
 				&& e.getPlayer().getItemInHand().getType() != Material.AIR
-				&& e.getPlayer().getItemInHand().getType().isBlock() == true){
+				&& e.getPlayer().getItemInHand().getType() != Material.GLASS
+				&& e.getPlayer().getItemInHand().getType() != Material.OBSIDIAN
+				&& e.getPlayer().getItemInHand().getType().isBlock()){
 			Location location = e.getClickedBlock().getRelative(e.getBlockFace()).getLocation();
-			if (isInBuildArea(location) == true
+			if (isInClassicBuildArea(location) == true
 					&& location.getBlock().getType() == Material.AIR
 					&& isPlayerInBlock(location) == false){
 				location.getBlock().setType(e.getPlayer().getItemInHand().getType(), false);
@@ -67,7 +98,9 @@ public class LobbyBuilding implements Listener{
 			Location location = e.getClickedBlock().getLocation();
 			if (e.getClickedBlock().getType() != Material.GLASS
 					&& e.getClickedBlock().getType() != Material.OBSIDIAN
-					&& isInBuildArea(location) == true){
+					&& e.getClickedBlock().getType() != Material.NETHER_BRICK
+					&& (isInBuildArea(location) == true
+							|| isInClassicBuildArea(location) == true)){
 				location.getWorld().playEffect(location, Effect.STEP_SOUND, location.getBlock().getTypeId(), 10); // block break effect
 				location.getBlock().setType(Material.AIR);
 			}
@@ -83,8 +116,27 @@ public class LobbyBuilding implements Listener{
 			if (temp.getBlock().getType() == Material.GLASS){
 				return false; // players can't build above glass region
 			}
-			else if (temp.getBlock().getType() == Material.OBSIDIAN){
-				return true; // 
+			else if (temp.getBlock().getType() == Material.OBSIDIAN
+					&& temp.getBlock().getRelative(BlockFace.DOWN).getType() == Material.BEDROCK){
+				return true; // is in build area
+			}
+			y--;
+		}
+		return false;
+	}
+	
+	public boolean isInClassicBuildArea(Location locationToPlaceBlock){
+		Location temp;
+		
+		int y = locationToPlaceBlock.getBlockY();
+		while (y > 0){
+			temp = new Location(locationToPlaceBlock.getWorld(), locationToPlaceBlock.getBlockX(), y, locationToPlaceBlock.getBlockZ());
+			if (temp.getBlock().getType() == Material.GLASS){
+				return false; // players can't build above glass region
+			}
+			else if (temp.getBlock().getType() == Material.NETHER_BRICK
+					&& temp.getBlock().getRelative(BlockFace.DOWN).getType() == Material.BEDROCK){
+				return true; // is in classic build area
 			}
 			y--;
 		}
