@@ -19,7 +19,7 @@ public class WorldManager {
 	public WorldManager(){
 		worldTools = new WorldTools();
 		
-		worldsDir = new File("FinalGameWorlds");
+		worldsDir = new File("SplatoonGameWorlds");
 		if (worldsDir.exists() == false){
 			worldsDir.mkdir();
 		}
@@ -42,9 +42,12 @@ public class WorldManager {
 			deleteGameWorld();
 		}
 		
+		// choose random game world
+		File choosenGameWorld = worlds.get(Core.r.nextInt(worlds.size()));
+		
 		// copy game world
 		try{
-			worldTools.copyWorld("world", "world_game");
+			worldTools.copyWorld(choosenGameWorld.getPath(), "world_game");
 		}
 		catch (Exception e){
 			System.out.println("----- Error while copying the new game world! -----");
