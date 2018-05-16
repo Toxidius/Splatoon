@@ -20,6 +20,7 @@ import Splatoon.GameMechanics.RespawnTimerRunnable;
 import Splatoon.GameMechanics.SplatChargerRunnable;
 import Splatoon.GameMechanics.SplatRollerRunnable;
 import Splatoon.GameMechanics.SplatterShotRunnable;
+import Splatoon.GameMechanics.SquidCheckerRunnable;
 import Splatoon.GameMechanics.WoolClimbing;
 import Splatoon.GameMechanics.WoolCountUpdater;
 import Splatoon.Main.Core;
@@ -38,6 +39,7 @@ public class GameManager {
 	
 	public WoolCountUpdater woolCountUpdater;
 	public WoolClimbing woolClimbing;
+	public SquidCheckerRunnable squidCheckerRunnable;
 	public SplatRollerRunnable splatRollerRunnable;
 	public SplatChargerRunnable splatChargerRunnable;
 	public SplatterShotRunnable splatterShotRunnable;
@@ -64,7 +66,7 @@ public class GameManager {
 		gameStarter.stop();
 		scoreboardManager = new ScoreboardManager();
 		warmupTimeRemaining = 5;
-		timeRemaining = 180;
+		timeRemaining = 180; // gameplay time (seconds) -- default 180 (3 mins)
 		team1Blocks = 0;
 		team2Blocks = 0;
 		
@@ -121,16 +123,17 @@ public class GameManager {
 		
 		// start scheduled events
 		// scoreboard updater
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.thisPlugin, scoreboardManager, 20L, 20L);
+		scoreboardManager.start();
 		// wool count updater
 		woolCountUpdater = new WoolCountUpdater();
 		woolClimbing = new WoolClimbing();
+		squidCheckerRunnable = new SquidCheckerRunnable();
 		splatRollerRunnable = new SplatRollerRunnable();
 		splatChargerRunnable = new SplatChargerRunnable();
 		splatterShotRunnable = new SplatterShotRunnable();
 		// set some final values
 		Core.gameStarted = true;
-		Core.gameState = GameState.Running;
+		Core.gameState = GameState.Warmup;
 		
 		return true;
 	}
@@ -144,6 +147,7 @@ public class GameManager {
 		}
 		
 		// end all scheduled events
+		scoreboardManager.stop();
 		Bukkit.getScheduler().cancelTasks(Core.thisPlugin);
 		Core.gameState = GameState.Ending;
 		
@@ -549,6 +553,10 @@ public class GameManager {
 				}
 			}
 		}
+	}
+	
+	public void woolDust(byte woolColor, Location location, float radius, int amount){
+		ParticleEffect.BLOCK_DUST.display(new ParticleEffect.BlockData(Material.WOOL, woolColor), radius, radius, radius, 0.0F, amount, location, 25); // 25 is block distance it can be seen
 	}
 	
 	public void removeItemWithName(Player player, String itemName){

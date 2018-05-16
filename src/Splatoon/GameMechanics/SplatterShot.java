@@ -43,6 +43,9 @@ public class SplatterShot implements Listener{
 					}
 				}
 			}
+			
+			// wool particles
+			Core.gameManager.woolDust(woolColor, center, 1.0F, 200);
 		}
 	}
 	

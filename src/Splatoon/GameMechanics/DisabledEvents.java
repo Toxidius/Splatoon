@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Squid;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -34,6 +35,14 @@ public class DisabledEvents implements Listener{
 			if (e.getCause() == DamageCause.VOID){
 				e.getEntity().teleport(Core.lobbySpawn);
 			}
+		}
+	}
+
+	@EventHandler
+	public void onSquidDamage(EntityDamageEvent e){
+		if (e.getEntity() instanceof Squid
+				&& Core.gameStarted == true){
+			e.setCancelled(true);
 		}
 	}
 	

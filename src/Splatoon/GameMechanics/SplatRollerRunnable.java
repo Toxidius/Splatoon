@@ -52,6 +52,9 @@ public class SplatRollerRunnable implements Runnable{
 							if (temp.getBlock().getType() == Material.WOOL
 									&& temp.getBlock().getData() != woolColor){
 								temp.getBlock().setData(woolColor);
+								
+								// wool particle effect
+								Core.gameManager.woolDust(woolColor, temp.getBlock().getLocation().add(0.0, 1.0, 0.0), 0.5F, 50);
 							}
 						}
 					}

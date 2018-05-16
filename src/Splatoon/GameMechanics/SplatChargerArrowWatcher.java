@@ -33,8 +33,8 @@ public class SplatChargerArrowWatcher implements Runnable{
 		}
 		
 		Location arrowLocation = arrow.getLocation();
-		for (int x = arrowLocation.getBlockX()-1; x <= arrowLocation.getBlockX()+1; x++){
-			for (int z = arrowLocation.getBlockZ()-1; z <= arrowLocation.getBlockZ()+1; z++){
+		for (double x = arrowLocation.getBlockX()-0.5; x <= arrowLocation.getBlockX()+0.5; x++){
+			for (double z = arrowLocation.getBlockZ()-0.5; z <= arrowLocation.getBlockZ()+0.5; z++){
 				colorizeAllWoolBlocks(x, arrowLocation.getY(), z);
 			}
 		}
@@ -47,6 +47,7 @@ public class SplatChargerArrowWatcher implements Runnable{
 			if (temp.getBlock().getType() == Material.WOOL
 					&& temp.getBlock().getData() != woolColor){
 				temp.getBlock().setData(woolColor); // turn wool's color to the players team color
+				Core.gameManager.woolDust(woolColor, temp.getBlock().getLocation().add(0.0, 1.0, 0.0), 0.5F, 50);
 			}
 			y--;
 		}

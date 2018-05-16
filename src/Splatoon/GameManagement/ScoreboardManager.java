@@ -14,6 +14,7 @@ import Splatoon.Main.GameStates.GameState;
 
 public class ScoreboardManager implements Runnable{
 	
+	private int id;
 	public Scoreboard scoreboard;
 	public Scoreboard emptyScoreboard;
 	
@@ -28,8 +29,6 @@ public class ScoreboardManager implements Runnable{
 	private Score line4;
 	
 	public int time = 0;
-	public int peaceTime = 5 * 60; // 5 mins
-	public int regenTime = 60 * 60; // 60 mins
 	
 	public ScoreboardManager(){
 		scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
@@ -56,6 +55,16 @@ public class ScoreboardManager implements Runnable{
 		
 		// reset the current time(calls) for scoreboard runnable
 		time = 0;
+	}
+	
+	public void start(){
+		// starts the running of the scoreboard
+		id = Bukkit.getScheduler().scheduleSyncRepeatingTask(Core.thisPlugin, this, 20L, 20L);
+	}
+	
+	public void stop(){
+		// ends the running of the scoreboard
+		Bukkit.getScheduler().cancelTask(id);
 	}
 	
 	public void addPlayerToTeam(String playerName, int team){
@@ -145,6 +154,7 @@ public class ScoreboardManager implements Runnable{
 			else if (Core.gameManager.warmupTimeRemaining == 0){
 				// remove glass boxes
 				Core.gameManager.removeGlassBoxes();
+				Core.gameState = GameState.Running;
 			}
 			
 			// decrement the warmup time
@@ -178,12 +188,26 @@ public class ScoreboardManager implements Runnable{
 		String title, line1, line2, line3, line4;
 		title = ChatColor.GOLD + "Paint Count";
 		line1 = ChatColor.WHITE + "Time Remaining: " + Core.gameManager.timeRemaining;
-		line2 = Core.team1Color + "Purple: " + ChatColor.WHITE + Core.gameManager.team1Blocks;
-		line3 = Core.team2Color + "Green: " + ChatColor.WHITE + Core.gameManager.team2Blocks;
+		line2 = Core.team1Color + "Purple: " + ChatColor.WHITE + team1Percent() + "% (" + Core.gameManager.team1Blocks + ")";
+		line3 = Core.team2Color + "Green: " + ChatColor.WHITE + team2Percent() + "% (" + Core.gameManager.team2Blocks + ")";
 		line4 = "";
 		
 		updateSidebar(title, line1, line2, line3, line4);
 		time++;
+	}
+	
+	public int team1Percent(){
+		if (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks == 0){
+			return 0;
+		}
+		return Math.round( (Core.gameManager.team1Blocks / (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks)) * 100);
+	}
+	
+	public int team2Percent(){
+		if (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks == 0){
+			return 0;
+		}
+		return Math.round( (Core.gameManager.team2Blocks / (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks)) * 100);
 	}
 	
 	public boolean adminOnline(){
