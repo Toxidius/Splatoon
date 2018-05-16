@@ -1,0 +1,10 @@
+name: Splatoon
+main: Splatoon.Main.Core
+version: 1.0
+commands:
+   start:
+      description: Starts the game
+      usage: /<command>
+   end:
+      description: Ends the game
+      usage: /<command>
