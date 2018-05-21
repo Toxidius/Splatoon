@@ -21,7 +21,7 @@ public class SplatChargerRunnable implements Runnable{
 	public void run() {
 		for (Player player : Bukkit.getOnlinePlayers()){
 			if (player.getGameMode() == GameMode.SURVIVAL){
-				int kit = Core.gameManager.getPlayerKit(player);
+				int kit = Core.gameManager.getPlayerKitID(player);
 				if (kit == 2){
 					int currentAmount = Core.gameManager.getAmountInPlayerInventory(player, Material.ARROW);
 					if (currentAmount < maximumArrows){

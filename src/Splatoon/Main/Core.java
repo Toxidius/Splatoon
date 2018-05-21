@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -42,6 +43,12 @@ public class Core extends JavaPlugin{
 	public static Location team2Spawn;
 	public static Location woolRegionCorner1;
 	public static Location woolRegionCorner2;
+	public static Location team1Stand1Location;
+	public static Location team1Stand2Location;
+	public static Location team1Stand3Location;
+	public static Location team2Stand1Location;
+	public static Location team2Stand2Location;
+	public static Location team2Stand3Location;
 	public static int lobbyYaw;
 	public static int team1Yaw;
 	public static int team2Yaw;
@@ -57,6 +64,7 @@ public class Core extends JavaPlugin{
 	public static GameManager gameManager;
 	public static PluginManager pluginMan;
 	
+	@SuppressWarnings("unused")
 	@Override
 	public void onEnable(){
 		thisPlugin = this;
@@ -65,6 +73,7 @@ public class Core extends JavaPlugin{
 		gameState = GameState.NotStarted;
 		gameID = 1;
 		MOTD = "Woah new game?? :O";
+		pluginMan = Bukkit.getPluginManager();
 		
 		lobbyWorld = Bukkit.getWorld("world");
 		gameWorld = null;
@@ -77,6 +86,12 @@ public class Core extends JavaPlugin{
 		team2Spawn = new Location(lobbyWorld, 7.5, 12, -44.5, team2Yaw, 0F);
 		woolRegionCorner1 = new Location(lobbyWorld, -18, 5, -195);
 		woolRegionCorner2 = new Location(lobbyWorld, 33, 10, -37);
+		team1Stand1Location = new Location(lobbyWorld, 5.5, 11, -194.5, 0F, 0F);
+		team1Stand2Location = new Location(lobbyWorld, 7.5, 11, -194.5, 0F, 0F);
+		team1Stand3Location = new Location(lobbyWorld, 9.5, 11, -194.5, 0F, 0F);
+		team2Stand1Location = new Location(lobbyWorld, 9.5, 11, -38.5, 180F, 0F);
+		team2Stand2Location = new Location(lobbyWorld, 7.5, 11, -38.5, 180F, 0F);
+		team2Stand3Location = new Location(lobbyWorld, 5.5, 11, -38.5, 180F, 0F);
 		
 		team1Color = ChatColor.DARK_PURPLE;
 		team2Color = ChatColor.GREEN;
@@ -97,19 +112,10 @@ public class Core extends JavaPlugin{
 		SplatterShot splatterShot = new SplatterShot();
 		
 		// initialize objects
-		pluginMan = Bukkit.getPluginManager();
 		gameManager = new GameManager();
 		
 		// register listeners
-		pluginMan.registerEvents(playerJoin, thisPlugin);
-		pluginMan.registerEvents(playerChat, thisPlugin);
-		pluginMan.registerEvents(playerDeath, thisPlugin);
-		pluginMan.registerEvents(disabledEvents, thisPlugin);
-		pluginMan.registerEvents(lobbyBuilding, thisPlugin);
-		pluginMan.registerEvents(spawnInvulerability, thisPlugin);
-		pluginMan.registerEvents(kitSelection, thisPlugin);
-		pluginMan.registerEvents(splatCharger, thisPlugin);
-		pluginMan.registerEvents(splatterShot, thisPlugin);
+		// no longer needed -- each listener class is responsible for registering as a listener by calling registerListener()
 	}
 	
 	@Override
@@ -143,7 +149,9 @@ public class Core extends JavaPlugin{
 		return false;
 	}
 	
-	
+	public static void registerListener(Listener listener){
+		pluginMan.registerEvents(listener, thisPlugin);
+	}
 	
 	
 }

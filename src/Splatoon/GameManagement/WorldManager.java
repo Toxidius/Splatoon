@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import Splatoon.Main.Core;
@@ -12,9 +14,11 @@ import Splatoon.Main.Core;
 public class WorldManager {
 	
 	public WorldTools worldTools;
-	//private ConfigManager configManager;
+	private ConfigManager configManager;
 	private File worldsDir;
+	private File chosenWorldConfig;
 	private ArrayList<File> worlds;
+	private String pathSeparator = File.separator;
 	
 	public WorldManager(){
 		worldTools = new WorldTools();
@@ -33,7 +37,14 @@ public class WorldManager {
 		}
 	}
 	
-	public void createGameWorld(){
+	public boolean createGameWorld(){
+		if (worlds == null
+				|| worlds.isEmpty()
+				|| worlds.size() < 1){
+			Bukkit.getServer().broadcastMessage("No game worlds able to be loaded!");
+			return false;
+		}
+		
 		// delete game world if already exists
 		if (worldTools.checkWorldExists("world_game") == true){
 			for (Player player : Bukkit.getOnlinePlayers()){
@@ -43,11 +54,17 @@ public class WorldManager {
 		}
 		
 		// choose random game world
-		File choosenGameWorld = worlds.get(Core.r.nextInt(worlds.size()));
+		File chosenGameWorld = worlds.get(Core.r.nextInt(worlds.size()));
+		chosenWorldConfig = new File(worldsDir.getPath() + pathSeparator + chosenGameWorld.getName() + ".yml");
+		
+		if (chosenWorldConfig.exists() == false){
+			Bukkit.getServer().broadcastMessage("The world config file doesn't exist!");
+			return false;
+		}
 		
 		// copy game world
 		try{
-			worldTools.copyWorld(choosenGameWorld.getPath(), "world_game");
+			worldTools.copyWorld(chosenGameWorld.getPath(), "world_game");
 		}
 		catch (Exception e){
 			System.out.println("----- Error while copying the new game world! -----");
@@ -62,6 +79,10 @@ public class WorldManager {
 		// set some world values
 		Core.gameWorld.setAutoSave(false);
 		Core.gameWorld.setDifficulty(Difficulty.HARD);
+		
+		// load config values
+		loadConfig();
+		return true;
 	}
 	
 	public void deleteGameWorld(){
@@ -77,90 +98,76 @@ public class WorldManager {
 		}
 	}
 	
-	/*
-	public void readConfig(){
-		// loads in all values from the config, and sets up the necessary values in the main class
+	public void loadConfig(){
+		// loads in all values from the config, and sets up the necessary values in the main class	
 		double x, y, z, yaw;
-		World world = CACore.lobbyWorld;
+		World world = Core.lobbyWorld;
+		configManager = new ConfigManager(chosenWorldConfig);
 		
-		configManager = new ConfigManager(choosenWorldConfig);
-		CACore.numTeams = configManager.getInt("num-teams");
-		CACore.hasMiddleResource = configManager.getBoolean("has-middle-resource");
+		// spawn locations
+		x = configManager.getDouble("spectator.spawn-x");
+		y = configManager.getDouble("spectator.spawn-y");
+		z = configManager.getDouble("spectator.spawn-z");
+		Core.spectatorSpawn = new Location(world, x, y, z);
 		
-		CACore.team1Name = configManager.getString("team1.name");
-		CACore.team1Color = ChatColor.valueOf(CACore.team1Name.toUpperCase()) + "";
 		x = configManager.getDouble("team1.spawn-x");
 		y = configManager.getDouble("team1.spawn-y");
 		z = configManager.getDouble("team1.spawn-z");
-		yaw = configManager.getInt("team1.spawn-yaw");
-		CACore.team1Spawn = new Location(world, x, y, z, (float)yaw, 0F);
-		x = configManager.getDouble("team1.beacon-x");
-		y = configManager.getDouble("team1.beacon-y");
-		z = configManager.getDouble("team1.beacon-z");
-		CACore.team1Beacon = new Location(world, x, y, z);
-		x = configManager.getDouble("team1.resource-x");
-		y = configManager.getDouble("team1.resource-y");
-		z = configManager.getDouble("team1.resource-z");
-		CACore.team1Resource = new Location(world, x, y, z);
+		yaw = configManager.getDouble("team1.spawn-yaw");
+		Core.team1Spawn = new Location(world, x, y, z, (float)yaw, 0F);
 		
-		CACore.team2Name = configManager.getString("team2.name");
-		CACore.team2Color = ChatColor.valueOf(CACore.team2Name.toUpperCase()) + "";
 		x = configManager.getDouble("team2.spawn-x");
 		y = configManager.getDouble("team2.spawn-y");
 		z = configManager.getDouble("team2.spawn-z");
 		yaw = configManager.getDouble("team2.spawn-yaw");
-		CACore.team2Spawn = new Location(world, x, y, z, (float)yaw, 0F);
-		x = configManager.getDouble("team2.beacon-x");
-		y = configManager.getDouble("team2.beacon-y");
-		z = configManager.getDouble("team2.beacon-z");
-		CACore.team2Beacon = new Location(world, x, y, z);
-		x = configManager.getDouble("team2.resource-x");
-		y = configManager.getDouble("team2.resource-y");
-		z = configManager.getDouble("team2.resource-z");
-		CACore.team2Resource = new Location(world, x, y, z);
-				
-		if (CACore.numTeams == 3){
-			CACore.team3Name = configManager.getString("team3.name");
-			CACore.team3Color = ChatColor.valueOf(CACore.team3Name.toUpperCase()) + "";
-			x = configManager.getDouble("team3.spawn-x");
-			y = configManager.getDouble("team3.spawn-y");
-			z = configManager.getDouble("team3.spawn-z");
-			yaw = configManager.getDouble("team3.spawn-yaw");
-			CACore.team3Spawn = new Location(world, x, y, z, (float)yaw, 0F);
-			x = configManager.getDouble("team3.beacon-x");
-			y = configManager.getDouble("team3.beacon-y");
-			z = configManager.getDouble("team3.beacon-z");
-			CACore.team3Beacon = new Location(world, x, y, z);
-			x = configManager.getDouble("team3.resource-x");
-			y = configManager.getDouble("team3.resource-y");
-			z = configManager.getDouble("team3.resource-z");
-			CACore.team3Resource = new Location(world, x, y, z);
-		}
+		Core.team2Spawn = new Location(world, x, y, z, (float)yaw, 0F);
 		
-		if (CACore.hasMiddleResource == true){
-			x = configManager.getDouble("middle.resource-x");
-			y = configManager.getDouble("middle.resource-y");
-			z = configManager.getDouble("middle.resource-z");
-			CACore.middleResource = new Location(world, x, y, z);
-		}
+		// wool regions
+		x = configManager.getDouble("woolRegionCorner1.spawn-x");
+		y = configManager.getDouble("woolRegionCorner1.spawn-y");
+		z = configManager.getDouble("woolRegionCorner1.spawn-z");
+		Core.woolRegionCorner1 = new Location(world, x, y, z);
 		
-		CACore.team1Color = ChatColor.valueOf(CACore.team1Name.toUpperCase()) + "";
-		CACore.team2Color = ChatColor.valueOf(CACore.team2Name.toUpperCase()) + "";
-		CACore.team3Color = ChatColor.valueOf(CACore.team3Name.toUpperCase()) + "";
+		x = configManager.getDouble("woolRegionCorner2.spawn-x");
+		y = configManager.getDouble("woolRegionCorner2.spawn-y");
+		z = configManager.getDouble("woolRegionCorner2.spawn-z");
+		Core.woolRegionCorner2 = new Location(world, x, y, z);
 		
-		CACore.team1HelmetColor = Color.fromRGB(configManager.getInt("team1.helmet-color"));
-		CACore.team2HelmetColor = Color.fromRGB(configManager.getInt("team2.helmet-color"));
-		CACore.team3HelmetColor = Color.fromRGB(configManager.getInt("team3.helmet-color"));
+		// stands
+		x = configManager.getDouble("team1.stand1-x");
+		y = configManager.getDouble("team1.stand1-y");
+		z = configManager.getDouble("team1.stand1-z");
+		yaw = configManager.getDouble("team1.spawn-yaw");
+		Core.team1Stand1Location = new Location(world, x, y, z, (float)yaw, 0F);
 		
-		if (CACore.team1Name.contains("_")){
-			CACore.team1Name = CACore.team1Name.substring(CACore.team1Name.indexOf("_")+1); // for long names like Dark_Purple will turn to just Purple
-		}
-		if (CACore.team2Name.contains("_")){
-			CACore.team2Name = CACore.team2Name.substring(CACore.team2Name.indexOf("_")+1); // for long names like Dark_Purple will turn to just Purple
-		}
-		if (CACore.team3Name.contains("_")){
-			CACore.team3Name = CACore.team3Name.substring(CACore.team3Name.indexOf("_")+1); // for long names like Dark_Purple will turn to just Purple
-		}
+		x = configManager.getDouble("team1.stand2-x");
+		y = configManager.getDouble("team1.stand2-y");
+		z = configManager.getDouble("team1.stand2-z");
+		yaw = configManager.getDouble("team1.spawn-yaw");
+		Core.team1Stand2Location = new Location(world, x, y, z, (float)yaw, 0F);
+		
+		x = configManager.getDouble("team1.stand3-x");
+		y = configManager.getDouble("team1.stand3-y");
+		z = configManager.getDouble("team1.stand3-z");
+		yaw = configManager.getDouble("team1.spawn-yaw");
+		Core.team1Stand3Location = new Location(world, x, y, z, (float)yaw, 0F);
+		
+		x = configManager.getDouble("team2.stand1-x");
+		y = configManager.getDouble("team2.stand1-y");
+		z = configManager.getDouble("team2.stand1-z");
+		yaw = configManager.getDouble("team2.spawn-yaw");
+		Core.team2Stand1Location = new Location(world, x, y, z, (float)yaw, 0F);
+		
+		x = configManager.getDouble("team2.stand2-x");
+		y = configManager.getDouble("team2.stand2-y");
+		z = configManager.getDouble("team2.stand2-z");
+		yaw = configManager.getDouble("team2.spawn-yaw");
+		Core.team2Stand2Location = new Location(world, x, y, z, (float)yaw, 0F);
+		
+		x = configManager.getDouble("team2.stand3-x");
+		y = configManager.getDouble("team2.stand3-y");
+		z = configManager.getDouble("team2.stand3-z");
+		yaw = configManager.getDouble("team2.spawn-yaw");
+		Core.team2Stand3Location = new Location(world, x, y, z, (float)yaw, 0F);
 	}
-	*/
 }

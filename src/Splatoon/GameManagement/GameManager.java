@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 
+import Splatoon.GameMechanics.KitSelectionStands;
 import Splatoon.GameMechanics.RespawnTimerRunnable;
 import Splatoon.GameMechanics.SplatChargerRunnable;
 import Splatoon.GameMechanics.SplatRollerRunnable;
@@ -34,6 +35,7 @@ public class GameManager {
 	public GameStarter gameStarter;
 	public int team1Blocks;
 	public int team2Blocks;
+	public int gameTime = 180; // total gameplay time (seconds) -- default 180 (3 mins)
 	public int warmupTimeRemaining;
 	public int timeRemaining;
 	
@@ -43,14 +45,15 @@ public class GameManager {
 	public SplatRollerRunnable splatRollerRunnable;
 	public SplatChargerRunnable splatChargerRunnable;
 	public SplatterShotRunnable splatterShotRunnable;
+	public KitSelectionStands kitSelectionStands;
 	
 	public GameManager(){
 		r = new Random();
 		worldManager = new WorldManager();
 		scoreboardManager = new ScoreboardManager();
+		kitSelectionStands = new KitSelectionStands();
 		
 		gameStarter = new GameStarter();
-		Core.pluginMan.registerEvents(gameStarter, Core.thisPlugin);
 		gameStarter.start();
 	}
 	
@@ -66,33 +69,39 @@ public class GameManager {
 		gameStarter.stop();
 		scoreboardManager = new ScoreboardManager();
 		warmupTimeRemaining = 5;
-		timeRemaining = 180; // gameplay time (seconds) -- default 180 (3 mins)
+		timeRemaining = gameTime; // gameplay time (seconds) -- default 180 (3 mins)
 		team1Blocks = 0;
 		team2Blocks = 0;
 		
 		// create the game world
 		//Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Loading game world...");
-		createGameWorld();
+		boolean output = createGameWorld();
+		if (output == false){
+			return false; // game could not be started because the world couldn't be loaded
+		}
 		//Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Done loading game world.");
 		
 		// update world locations
 		Core.team1Spawn.setWorld(Core.gameWorld);
 		Core.team2Spawn.setWorld(Core.gameWorld);
 		Core.spectatorSpawn.setWorld(Core.gameWorld);
+		Core.woolRegionCorner1.setWorld(Core.gameWorld);
+		Core.woolRegionCorner2.setWorld(Core.gameWorld);
+		Core.team1Stand1Location.setWorld(Core.gameWorld);
+		Core.team1Stand2Location.setWorld(Core.gameWorld);
+		Core.team1Stand3Location.setWorld(Core.gameWorld);
+		Core.team2Stand1Location.setWorld(Core.gameWorld);
+		Core.team2Stand2Location.setWorld(Core.gameWorld);
+		Core.team2Stand3Location.setWorld(Core.gameWorld);
+		
 		
 		// setup scoreboards
 		scoreboardManager.setupScoreboard();
-		String title, line1, line2, line3, line4;
-		title = ChatColor.GOLD + "Paint Count";
-		line1 = ChatColor.WHITE + "Time Remaining: " + timeRemaining;
-		line2 = ChatColor.DARK_PURPLE + "Purple: " + ChatColor.WHITE + "0";
-		line3 = ChatColor.GREEN + "Green: " + ChatColor.WHITE + "0";
-		line4 = "";
-		scoreboardManager.setupSidebar(title, line1, line2, line3, line4);
+		scoreboardManager.updateScoreboard(); // update the scoreboard with the default values
 		
 		// generate the player teams
 		generateTeams();
-		// setup kits based on what the player chose.
+		// setup kits based on what the player chose
 		setupKits();
 		
 		// finish up the player and teleport into game
@@ -131,6 +140,8 @@ public class GameManager {
 		splatRollerRunnable = new SplatRollerRunnable();
 		splatChargerRunnable = new SplatChargerRunnable();
 		splatterShotRunnable = new SplatterShotRunnable();
+		// load kit selection stands
+		kitSelectionStands.generateStands();
 		// set some final values
 		Core.gameStarted = true;
 		Core.gameState = GameState.Warmup;
@@ -238,8 +249,8 @@ public class GameManager {
 		return true;
 	}
 	
-	public void createGameWorld(){
-		worldManager.createGameWorld();
+	public boolean createGameWorld(){
+		return worldManager.createGameWorld();
 	}
 	
 	public void generateTeams(){
@@ -297,27 +308,28 @@ public class GameManager {
 			if (stack == null
 					|| stack.getType() == Material.AIR){
 				// air -- no kit selected, choose a random one for them
-				int randomKit = Core.r.nextInt(3)+1; // 1 to 3
-				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
-				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(randomKit)));
+				int randomKitID = Core.r.nextInt(3)+1; // 1 to 3
+				setPlayerKit(player, randomKitID);
 			}
 			else if (stack.getType() == Material.STICK){
-				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
-				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(1)));
+				setPlayerKit(player, 1); // splat roller id
 			}
 			else if (stack.getType() == Material.BOW){
-				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
-				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(2)));
+				setPlayerKit(player, 2); // splat charger id
 			}
 			else if (stack.getType() == Material.SNOW_BALL){
-				player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
-				player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(3)));
+				setPlayerKit(player, 3); // splatter shot id
 			}
 		}
 	}
 	
+	public void setPlayerKit(Player player, int kitID){
+		player.removeMetadata("game" + Core.gameID + "kit", Core.thisPlugin);
+		player.setMetadata("game" + Core.gameID + "kit", new FixedMetadataValue(Core.thisPlugin, new Integer(kitID)));
+	}
+	
 	public void givePlayerKit(Player player){
-		int kit = getPlayerKit(player.getName());
+		int kit = getPlayerKitID(player);
 		if (kit == 1){
 			// splat roller
 			ItemStack stick = new ItemStack(Material.STICK, 1);
@@ -419,15 +431,7 @@ public class GameManager {
 		}
 	}
 	
-	public int getPlayerKit(String playerName){
-		Player player = Bukkit.getPlayer(playerName);
-		if (player == null){
-			return -1; // no player with this name online
-		}
-		return getPlayerKit(player);
-	}
-	
-	public int getPlayerKit(Player player){
+	public int getPlayerKitID(Player player){
 		if (player.hasMetadata("game" + Core.gameID + "kit") == true){
 			return player.getMetadata("game" + Core.gameID + "kit").get(0).asInt();
 		}

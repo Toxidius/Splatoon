@@ -24,6 +24,7 @@ import Splatoon.Main.Core;
 public class DisabledEvents implements Listener{
 	
 	public DisabledEvents() {
+		Core.registerListener(this);
 	}
 	
 	@EventHandler

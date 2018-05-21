@@ -9,6 +9,10 @@ import Splatoon.Main.Core;
 
 public class PlayerJoin implements Listener{
 	
+	public PlayerJoin(){
+		Core.registerListener(this);
+	}
+	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e){
 		if (Core.gameStarted == false){

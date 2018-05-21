@@ -1,6 +1,7 @@
 package Splatoon.GameMechanics;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
@@ -82,6 +83,10 @@ public class SquidWatcher implements Runnable{
 			// player logged out
 			end();
 			return;
+		}
+		if (player.getGameMode() == GameMode.SPECTATOR){
+			// player died
+			end();
 		}
 		if (player.getItemInHand() == null
 				|| player.getItemInHand().getType() == Material.AIR){

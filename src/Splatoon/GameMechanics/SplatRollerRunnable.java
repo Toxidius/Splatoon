@@ -68,7 +68,7 @@ public class SplatRollerRunnable implements Runnable{
 						Player otherPlayer = (Player) entity;
 						if (otherPlayer.getGameMode() == GameMode.SURVIVAL){
 							otherPlayerTeam = Core.gameManager.getPlayerTeam(otherPlayer);
-							otherPlayerKit = Core.gameManager.getPlayerKit(otherPlayer);
+							otherPlayerKit = Core.gameManager.getPlayerKitID(otherPlayer);
 							//Bukkit.getServer().broadcastMessage(otherPlayer.getName() + " " + otherPlayerTeam + " " + team);
 							if (otherPlayerTeam != team){
 								otherPlayer.damage(30.0, player); // this player isn't on the same team, and within range. they get killed by the splat roller

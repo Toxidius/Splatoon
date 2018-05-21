@@ -11,6 +11,10 @@ import Splatoon.Main.Core;
 
 public class SplatCharger implements Listener{
 	
+	public SplatCharger() {
+		Core.registerListener(this);
+	}
+	
 	@EventHandler
 	public void onArrowShoot(ProjectileLaunchEvent e){
 		if (Core.gameStarted == true

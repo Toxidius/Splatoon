@@ -30,6 +30,8 @@ public class GameStarter implements Runnable, Listener{
 	private Set<Player> playersReady;
 	
 	public GameStarter(){
+		Core.registerListener(this);
+		
 		calls = 0;
 		countdown = 0;
 		countingDown = false;

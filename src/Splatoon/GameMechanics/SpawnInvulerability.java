@@ -9,6 +9,10 @@ import Splatoon.Main.Core;
 
 public class SpawnInvulerability implements Listener{
 	
+	public SpawnInvulerability() {
+		Core.registerListener(this);
+	}
+	
 	@EventHandler
 	public void onEntityDamageNearSpawn(EntityDamageByEntityEvent e){
 		if (Core.gameStarted == true

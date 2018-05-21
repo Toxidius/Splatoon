@@ -10,6 +10,10 @@ import Splatoon.Main.Core;
 
 public class PlayerChat implements Listener{
 	
+	public PlayerChat(){
+		Core.registerListener(this);
+	}
+	
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent e){
 		e.setCancelled(true); // complete overriding of message behavior

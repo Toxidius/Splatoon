@@ -19,6 +19,10 @@ import Splatoon.Main.Core;
 
 public class LobbyBuilding implements Listener{
 	
+	public LobbyBuilding() {
+		Core.registerListener(this);
+	}
+	
 	@SuppressWarnings({"deprecation"})
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerChooseBlock(PlayerInteractEvent e){

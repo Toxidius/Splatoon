@@ -85,28 +85,11 @@ public class ScoreboardManager implements Runnable{
 		}
 	}
 	
-	public void setupSidebar(String title, String line1, String line2, String line3, String line4){
-		sidebarObjective = scoreboard.registerNewObjective("gameObjective", "dummy");
-		sidebarObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		sidebarObjective.setDisplayName(title);
-		
-		this.line1 = sidebarObjective.getScore(line1);
-		this.line1.setScore(4);
-		this.line2 = sidebarObjective.getScore(line2);
-		this.line2.setScore(3);
-		if (line3.equals("") == false){
-			this.line3 = sidebarObjective.getScore(line3);
-			this.line3.setScore(2);
-		}
-		if (line4.equals("") == false){
-			this.line4 = sidebarObjective.getScore(line4);
-			this.line4.setScore(1);
-		}	
-	}
-	
 	public void updateSidebar(String title, String line1, String line2, String line3, String line4){
 		scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-		sidebarObjective.unregister();
+		if (sidebarObjective != null){
+			sidebarObjective.unregister(); // sidebar is already active, unregister the active one so it can be replaced
+		}
 		sidebarObjective = scoreboard.registerNewObjective("gameObjective", "dummy");
 		sidebarObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		sidebarObjective.setDisplayName(title); // ChatColor.GOLD + "Paint Percent";

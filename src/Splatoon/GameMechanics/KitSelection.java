@@ -10,8 +10,14 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import Splatoon.Main.Core;
+
 public class KitSelection implements Listener{
 
+	public KitSelection() {
+		Core.registerListener(this);
+	}
+	
 	@EventHandler
 	public void onRightClickSign(PlayerInteractEvent e){
 		if (e.getAction() == Action.RIGHT_CLICK_BLOCK

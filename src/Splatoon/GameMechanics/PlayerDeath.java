@@ -12,6 +12,10 @@ import Splatoon.Main.Core;
 
 public class PlayerDeath implements Listener{
 
+	public PlayerDeath() {
+		Core.registerListener(this);
+	}
+	
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent e){
 		e.getDrops().clear(); // clear out all items in the drops

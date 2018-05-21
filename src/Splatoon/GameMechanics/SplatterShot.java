@@ -13,6 +13,10 @@ import Splatoon.Main.Core;
 
 public class SplatterShot implements Listener{
 
+	public SplatterShot() {
+		Core.registerListener(this);
+	}
+	
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onSnowballHitWall(ProjectileHitEvent e){
