@@ -37,7 +37,7 @@ public class WorldManager {
 		}
 	}
 	
-	public boolean createGameWorld(){
+	public boolean createGameWorld(String worldName){
 		if (worlds == null
 				|| worlds.isEmpty()
 				|| worlds.size() < 1){
@@ -53,10 +53,28 @@ public class WorldManager {
 			deleteGameWorld();
 		}
 		
-		// choose random game world
-		File chosenGameWorld = worlds.get(Core.r.nextInt(worlds.size()));
-		chosenWorldConfig = new File(worldsDir.getPath() + pathSeparator + chosenGameWorld.getName() + ".yml");
+		// choose the game world
+		File chosenGameWorld = null;
+		if (worldName == null){
+			// choose random game world
+			chosenGameWorld = worlds.get(Core.r.nextInt(worlds.size()));
+		}
+		else{
+			// worldName was specified, get it's directory
+			for (File file : worlds){
+				if (file.getName().contains(worldName)){
+					chosenGameWorld = file;
+					break;
+				}
+			}
+			if (chosenGameWorld == null){
+				// specified world could not be found, choose the first one in the list
+				chosenGameWorld = worlds.get(0);
+			}
+		}
 		
+		// determine the config file for this world
+		chosenWorldConfig = new File(worldsDir.getPath() + pathSeparator + chosenGameWorld.getName() + ".yml");
 		if (chosenWorldConfig.exists() == false){
 			Bukkit.getServer().broadcastMessage("The world config file doesn't exist!");
 			return false;

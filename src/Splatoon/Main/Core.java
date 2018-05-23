@@ -131,8 +131,8 @@ public class Core extends JavaPlugin{
 				return true;
 			}
 			
-			// force start game
-			gameManager.startGame();
+			// force start game with random world
+			gameManager.startGame(null);
 			return true;
 		}
 		else if (cmd.getName().equalsIgnoreCase("end")){

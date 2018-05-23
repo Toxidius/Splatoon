@@ -57,7 +57,7 @@ public class GameManager {
 		gameStarter.start();
 	}
 	
-	public boolean startGame(){
+	public boolean startGame(String worldName){
 		// returns whether or not the game started successfully
 		
 		// check if a game can start
@@ -75,7 +75,7 @@ public class GameManager {
 		
 		// create the game world
 		//Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Loading game world...");
-		boolean output = createGameWorld();
+		boolean output = createGameWorld(worldName);
 		if (output == false){
 			return false; // game could not be started because the world couldn't be loaded
 		}
@@ -249,8 +249,8 @@ public class GameManager {
 		return true;
 	}
 	
-	public boolean createGameWorld(){
-		return worldManager.createGameWorld();
+	public boolean createGameWorld(String worldName){
+		return worldManager.createGameWorld(worldName);
 	}
 	
 	public void generateTeams(){

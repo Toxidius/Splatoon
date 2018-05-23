@@ -150,7 +150,7 @@ public class GameStarter implements Runnable, Listener{
 					countdown = 0;
 				}
 				else{
-					Core.gameManager.startGame(); // start game with random map
+					Core.gameManager.startGame(null); // start game with random map
 					countingDown = false;
 					countdown = 0;
 				}

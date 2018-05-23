@@ -183,14 +183,14 @@ public class ScoreboardManager implements Runnable{
 		if (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks == 0){
 			return 0;
 		}
-		return Math.round( (Core.gameManager.team1Blocks / (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks)) * 100);
+		return (int)Math.round( ((double)Core.gameManager.team1Blocks / (double)(Core.gameManager.team1Blocks + Core.gameManager.team2Blocks)) * 100);
 	}
 	
 	public int team2Percent(){
 		if (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks == 0){
 			return 0;
 		}
-		return Math.round( (Core.gameManager.team2Blocks / (Core.gameManager.team1Blocks + Core.gameManager.team2Blocks)) * 100);
+		return (int)Math.round( ((double)Core.gameManager.team2Blocks / (double)(Core.gameManager.team1Blocks + Core.gameManager.team2Blocks)) * 100);
 	}
 	
 	public boolean adminOnline(){
