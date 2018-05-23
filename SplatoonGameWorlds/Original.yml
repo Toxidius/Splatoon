@@ -1,0 +1,40 @@
+spectator:
+  spawn-x: -7.5
+  spawn-y: 10
+  spawn-z: -116.5
+team1:
+  spawn-x: 7.5
+  spawn-y: 12
+  spawn-z: -188.5
+  spawn-yaw: 0.0
+  stand1-x: 5.5
+  stand1-y: 11
+  stand1-z: -194.5
+  stand2-x: 7.5
+  stand2-y: 11
+  stand2-z: -194.5
+  stand3-x: 9.5
+  stand3-y: 11
+  stand3-z: -194.5
+team2:
+  spawn-x: 7.5
+  spawn-y: 12
+  spawn-z: -44.5
+  spawn-yaw: -180.0
+  stand1-x: 9.5
+  stand1-y: 11
+  stand1-z: -38.5
+  stand2-x: 7.5
+  stand2-y: 11
+  stand2-z: -38.5
+  stand3-x: 5.5
+  stand3-y: 11
+  stand3-z: -38.5
+woolRegionCorner1:
+  spawn-x: -18.0
+  spawn-y: 5
+  spawn-z: -195.0
+woolRegionCorner2:
+  spawn-x: 33.0
+  spawn-y: 10
+  spawn-z: -37.0
