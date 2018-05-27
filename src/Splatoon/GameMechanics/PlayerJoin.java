@@ -27,6 +27,7 @@ public class PlayerJoin implements Listener{
 				// has no team, set them in spectator mode
 				e.getPlayer().setGameMode(GameMode.SPECTATOR);
 				e.getPlayer().teleport(Core.spectatorSpawn);
+				e.getPlayer().setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
 			}
 			else{
 				// they are already in the game and have a team, teleport to their team's spawn
@@ -36,6 +37,7 @@ public class PlayerJoin implements Listener{
 				else if (playerTeam == 2){
 					e.getPlayer().teleport(Core.team2Spawn);
 				}
+				e.getPlayer().setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
 			}
 		}
 	}
