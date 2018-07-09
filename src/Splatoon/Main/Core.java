@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -145,7 +146,46 @@ public class Core extends JavaPlugin{
 			gameManager.endGameInitiate(-1); // end with no team winning
 			return true;
 		}
-		
+		else if (cmd.getName().equalsIgnoreCase("warps")){
+			if ( !(sender instanceof Player)){
+				sender.sendMessage("Must be player to use this command.");
+				return true;
+			}
+			if (!sender.isOp()){
+				sender.sendMessage("Must be OP to use this command.");
+				return true;
+			}
+			sender.sendMessage(ChatColor.GRAY + "Currently loaded worlds: ");
+			for (World world : Bukkit.getWorlds()){
+				sender.sendMessage(ChatColor.GRAY + world.getName());
+			}
+			return true;
+		}
+		else if (cmd.getName().equalsIgnoreCase("warp")){
+			if ( !(sender instanceof Player)){
+				sender.sendMessage("Must be player to use this command.");
+				return true;
+			}
+			if (!sender.isOp()){
+				sender.sendMessage("Must be OP to use this command.");
+				return true;
+			}
+			if (args.length < 1){
+				sender.sendMessage("Must specify a world to warp to. Ex: /warp world");
+				return true;
+			}
+			if (gameManager.worldManager.worldTools.checkWorldExists(args[0]) == false){
+				sender.sendMessage("The world " + args[0] + " doesn't exist!");
+				return true;
+			}
+			// load the world if it isn't already loaded
+			gameManager.worldManager.worldTools.loadWorld(args[0]);
+			Player player = (Player) sender;
+			World world = Bukkit.getWorld(args[0]);
+			Location spawnLocation = world.getSpawnLocation();
+			player.teleport(spawnLocation);
+			return true;
+		}
 		return false;
 	}
 	

@@ -1,6 +1,7 @@
 package Splatoon.GameMechanics;
 
 import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -15,29 +16,31 @@ public class PlayerJoin implements Listener{
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e){
+		Player player = e.getPlayer();
 		if (Core.gameStarted == false){
-			e.getPlayer().teleport(Core.lobbySpawn);
-			e.getPlayer().setGameMode(GameMode.SURVIVAL);
+			player.teleport(Core.lobbySpawn);
+			player.setGameMode(GameMode.SURVIVAL);
+			player.setScoreboard(Core.gameManager.scoreboardManager.emptyScoreboard);
 			Core.gameManager.clearInventory(e.getPlayer());
 		}
 		else{
 			// game in progress
-			int playerTeam = Core.gameManager.getPlayerTeam(e.getPlayer());
+			int playerTeam = Core.gameManager.getPlayerTeam(player);
 			if (playerTeam == -1){
 				// has no team, set them in spectator mode
-				e.getPlayer().setGameMode(GameMode.SPECTATOR);
-				e.getPlayer().teleport(Core.spectatorSpawn);
-				e.getPlayer().setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
+				player.setGameMode(GameMode.SPECTATOR);
+				player.teleport(Core.spectatorSpawn);
+				player.setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
 			}
 			else{
 				// they are already in the game and have a team, teleport to their team's spawn
 				if (playerTeam == 1){
-					e.getPlayer().teleport(Core.team1Spawn);
+					player.teleport(Core.team1Spawn);
 				}
 				else if (playerTeam == 2){
-					e.getPlayer().teleport(Core.team2Spawn);
+					player.teleport(Core.team2Spawn);
 				}
-				e.getPlayer().setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
+				player.setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
 			}
 		}
 	}

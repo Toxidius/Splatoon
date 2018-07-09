@@ -128,7 +128,8 @@ public class GameManager {
 		}
 		
 		// game start messages
-		Bukkit.getServer().broadcastMessage(ChatColor.AQUA + "All chat is global.");
+		Bukkit.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "All chat is team unless prefaced with a \"!\" for global message");
+		Bukkit.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "Ex: \"!Hi Everybody\" for a global message");
 		
 		// start scheduled events
 		// scoreboard updater
@@ -466,6 +467,16 @@ public class GameManager {
 			}
 		}
 		return amount;
+	}
+	
+	public void teamMessage(int team, String message){
+		int playerTeam;
+		for (Player player : Bukkit.getOnlinePlayers()){
+			playerTeam = getPlayerTeam(player);
+			if (playerTeam == team){
+				player.sendMessage(message);
+			}
+		}
 	}
 	
 	@SuppressWarnings("deprecation")

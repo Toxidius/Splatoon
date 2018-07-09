@@ -73,8 +73,10 @@ public class SplatRollerRunnable implements Runnable{
 							if (otherPlayerTeam != team){
 								otherPlayer.damage(30.0, player); // this player isn't on the same team, and within range. they get killed by the splat roller
 							}
-							if (otherPlayerKit == 1){
-								// the other player is splat roller too, so kill the player aswell
+							if (otherPlayerKit == 1
+									&& otherPlayer.getItemInHand() != null
+									&& otherPlayer.getItemInHand().getType() == Material.STICK){
+								// the other player is splat roller too and both have the stick equiped. so kill the other player too
 								player.damage(30.0, otherPlayer);
 							}
 						}

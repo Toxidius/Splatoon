@@ -18,7 +18,7 @@ public class WorldTools {
 	
 	private World tempWorld;
 	
-	public WorldTools(){ // constructor
+	public WorldTools(){
 	}
 	
 	public boolean loadWorld(String worldName){
