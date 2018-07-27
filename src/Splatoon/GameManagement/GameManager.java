@@ -433,6 +433,12 @@ public class GameManager {
 	}
 	
 	public int getPlayerKitID(Player player){
+		/*
+		 * Gets the other player's kit id
+		 * 1 = splat roller
+		 * 2 = splat charger
+		 * 3 = splatter shot
+		 */
 		if (player.hasMetadata("game" + Core.gameID + "kit") == true){
 			return player.getMetadata("game" + Core.gameID + "kit").get(0).asInt();
 		}

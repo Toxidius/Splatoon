@@ -22,14 +22,15 @@ public class SplatRollerRunnable implements Runnable{
 	public void run() {
 		for (Player player : Bukkit.getOnlinePlayers()){
 			if (player.getGameMode() == GameMode.SURVIVAL
+					&& player.getItemInHand() != null
 					&& player.getItemInHand().getType() == Material.STICK){
 				// this player is a splat roller
 				byte woolColor = 0;
-				int team = Core.gameManager.getPlayerTeam(player);
-				if (team == 1){
+				int playerTeam = Core.gameManager.getPlayerTeam(player);
+				if (playerTeam == 1){
 					woolColor = Core.team1WoolColor;
 				}
-				else if (team == 2){
+				else if (playerTeam == 2){
 					woolColor = Core.team2WoolColor;
 				}
 				
@@ -66,18 +67,22 @@ public class SplatRollerRunnable implements Runnable{
 				for (Entity entity : player.getNearbyEntities(2.0, 2.0, 2.0)){
 					if (entity instanceof Player){
 						Player otherPlayer = (Player) entity;
-						if (otherPlayer.getGameMode() == GameMode.SURVIVAL){
+						if (otherPlayer.isDead() == false
+								&& otherPlayer.getGameMode() == GameMode.SURVIVAL){
 							otherPlayerTeam = Core.gameManager.getPlayerTeam(otherPlayer);
 							otherPlayerKit = Core.gameManager.getPlayerKitID(otherPlayer);
-							//Bukkit.getServer().broadcastMessage(otherPlayer.getName() + " " + otherPlayerTeam + " " + team);
-							if (otherPlayerTeam != team){
+							
+							if (otherPlayerTeam != playerTeam){
+								// these two player are on opposite teams perfrom steam roller damage check operations
+								// check if the other player within this player's range is also a splat roller player
+								if (otherPlayerKit == 1
+										&& otherPlayer.getItemInHand() != null
+										&& otherPlayer.getItemInHand().getType() == Material.STICK){
+									// the other player is splat roller too and both have the stick equiped, thus, kill the other player too
+									player.damage(30.0, otherPlayer);
+								}
+								// kill the other player by default
 								otherPlayer.damage(30.0, player); // this player isn't on the same team, and within range. they get killed by the splat roller
-							}
-							if (otherPlayerKit == 1
-									&& otherPlayer.getItemInHand() != null
-									&& otherPlayer.getItemInHand().getType() == Material.STICK){
-								// the other player is splat roller too and both have the stick equiped. so kill the other player too
-								player.damage(30.0, otherPlayer);
 							}
 						}
 					}
