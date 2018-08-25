@@ -28,6 +28,7 @@ public class PlayerJoin implements Listener{
 			int playerTeam = Core.gameManager.getPlayerTeam(player);
 			if (playerTeam == -1){
 				// has no team, set them in spectator mode
+				Core.gameManager.clearInventory(player);
 				player.setGameMode(GameMode.SPECTATOR);
 				player.teleport(Core.spectatorSpawn);
 				player.setScoreboard(Core.gameManager.scoreboardManager.scoreboard);
